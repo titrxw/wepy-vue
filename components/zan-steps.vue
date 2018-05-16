@@ -150,25 +150,29 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 7px;
+  left: 6px;
   width: 1px;
   background-color: #e5e5e5;
 }
 
 .zan-steps--vsteps .zan-steps__title {
+  
   display: inline-block;
   line-height: 20px;
-  padding-left: 27px;
+  padding-left: 5px;
 }
 
 .zan-steps--vsteps .zan-steps__title--desc {
+  margin-top:15px;
+  margin-left:15px;
+  word-break: break-all; word-wrap:break-word;
   padding-left: 3px;
 }
 
 .zan-steps--vsteps .zan-steps__icons {
   position: absolute;
   left: 7px;
-  top: 50%;
+  top: 26px;
   transform: translate(-50%, -50%);
   z-index: 2;
   padding: 3px 0;
@@ -233,8 +237,11 @@
       wx:for="{{ steps }}" wx:for-item="step" wx:key="unique" wx:for-index="index"
       class="zan-steps__step {{ hasDesc ? 'zan-steps__step--db-title' : '' }} {{ index == 0 ? 'zan-steps__step--first-child' : '' }} {{ index == steps.length - 1 ? 'zan-steps__step--last-child' : '' }} {{ step.done ? 'zan-steps__step--done' : '' }} {{ step.current ? 'zan-steps__step--cur' : '' }}"
     >
-      <view class="zan-steps__title">{{ step.text }}</view>
-      <view wx:if="{{ hasDesc && step.desc }}" class="zan-steps__title zan-steps__title--desc">{{ step.desc }}</view>
+      <view class="content">
+        <view class="zan-steps__title">{{ step.text }}</view>
+        <view class="zan-steps__title" style="float:right">{{ step.time }}</view>
+      </view>
+      <view wx:if="{{ hasDesc && step.desc }}" class="zan-steps__title--desc">{{ step.desc }}</view>
       <view class="zan-steps__icons">
         <view class="zan-steps__circle"></view>
       </view>
@@ -262,3 +269,11 @@ export default class zanSteps extends wepy.component {
   methods = {}
 }
 </script>
+<style>
+.content{
+  padding-left:15px;
+  line-height:20px;
+
+}
+</style>
+

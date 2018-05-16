@@ -1,23 +1,28 @@
 <template>
   <view class="upload">
-      <repeat for="{{urls}}" key="index" index="index" item="item">
+      <repeat for="{{tmpPics}}" key="index" index="index" item="item">
         <image @tap="deleteImg({{index}})" class="upload-img" style="{{'width:' + width + 'px;height:' + width + 'px;'}}"  src="{{imgHost + item}}"></image>
       </repeat>
       <button class="upload-btn" @tap="upload" style="{{'width:' + width + 'px;height:' + width + 'px;display:block;'}}"  >上传</button>
   </view>
 </template>
 <script>
-import component from 'component';
-export default class Upload extends component {
+import wepy from 'wepy';
+import Tip from 'tip'
+export default class Upload extends wepy.component {
   props = {
     imgHost: {
       type: String,
       default: ''
     },
-    urls: {
-      type: Array,
+    pics: {
+      type: [Array,String],
       default: function() {
-        return [];
+        if (this.multiple) {
+          return []
+        } else {
+          return ''
+        }
       },
       twoWay: true
     },
@@ -38,15 +43,43 @@ export default class Upload extends component {
       default: function() {
         return ['album ', 'camera'];
       }
+    },
+    fileSize: {
+      type: Number,
+      default: 2048
+    },
+    lineItems: {
+      type: Number,
+      default: 4
     }
   };
   data = {
-    width: 0
+    width: 0,
+    tmpPics: []
   };
+  watch = {
+    pics (val) {
+      if (this.multiple) {
+        this.tmpPics = val
+      } else {
+        this.tmpPics = [val]
+      }
+      this.$apply()
+    }
+  }
+
+  init (val) {
+    if (this.multiple) {
+      this.tmpPics = val
+    } else {
+      this.tmpPics = [val]
+    }
+  }
+
   methods = {
     upload() {
-      console.log(this)
       let _self = this;
+      console.log(this.multiple)
       if (!this.multiple) {
         this.count = 1;
       }
@@ -54,58 +87,54 @@ export default class Upload extends component {
         count: _self.count,
         sourceType: _self.sourceType,
         success: function(res) {
-          var tempFilePaths = res.tempFilePaths;
-          tempFilePaths.forEach(element => {
-            wx.uploadFile({
+          res.tempFiles.forEach(element => {
+            if (_self.fileSize * 1024 < element.size) {
+              Tip.errorToast('文件太大, 不能超过 ' + (_self.fileSize / 1024) + 'M.')
+              return false;
+            }
+            Tip.showLoading()
+            wepy.uploadFile({
               url: _self.uploadHost,
-              filePath: element,
-              name: 'file',
-              formData: {
-                token: _self.G.token
-              },
+              filePath: element.path,
               success: function(res) {
-                try{
-                  var data = JSON.parse(res.data);
-                  if (data.ret == 200) {
-                    if (!data.data.url) {
-                      _self.errorToast('文件上传失败')
-                      return false
-                    }
-                    _self.urls.push(data.data.url);
-                    _self.$apply();
+                if (res) {
+                  if (!_self.multiple) {
+                    _self.pics = res
                   } else {
-                    _self.errorToast(data.data.msg)
+                    _self.pics.push(res);
                   }
-                } catch (e) {
-                  _self.errorToast('数据格式错误')
+                  _self.$apply();
                 }
               },
-              fail: function(err) {}
+              complete: function () {
+                Tip.hideLoading()
+              }
             });
           });
         }
       });
     },
     deleteImg(index) {
-      this.urls = this.urls
+      this.pics = this.pics
         .slice(0, index)
-        .concat(this.urls.slice(index + 1, this.urls.length));
+        .concat(this.pics.slice(index + 1, this.pics.length));
     }
   };
-  mounted = function(options) {
-    this.width = (this.G.systemInfo.screenWidth - 50) / 4;
+  onLoad = function(options) {
+    this.width = (wepy.G.systemInfo.screenWidth - 60) / this.lineItems;
+    this.init(this.pics)
   };
 }
 </script>
-<style>
+<style scoped>
 .upload {
-  padding-left: 5px;
-  padding-right: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
   display: inline-block;
 }
 .upload-img,
 .upload-btn {
-  margin-top: 10px;
+  margin-top: 15px;
   margin-bottom: 5px;
   margin-left: 5px;
   margin-right: 5px;
