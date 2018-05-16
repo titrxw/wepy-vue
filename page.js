@@ -10,39 +10,13 @@ export default class page extends wepy.page {
     // this.$router = router;
   }
 
-  mounted () {
+  mounted (options) {
 
   }
 
   onLoad (options) {
-    this.G = wepy.G
     this.setData('G' , wepy.G)
+    this.G = wepy.G
     this.mounted(options)
-  }
-
-  errorToast(msg) {
-    wx.showToast({
-      title: msg,
-      icon: 'none',
-      duration: 2000
-    })
-  }
-
-  successToast (msg) {
-    wx.showToast({
-      title: msg,
-      icon: 'success',
-      duration: 2000
-    })
-  }
-
-  showLoading () {
-    wx.showLoading({
-      title: '加载中',
-    })
-  }
-
-  closeLoading () {
-    wx.hideLoading()
   }
 }
