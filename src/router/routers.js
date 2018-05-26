@@ -36,5 +36,5 @@ export default [{
       showNavBar: false
     },
     component: ''
-  }
+  },
 ]

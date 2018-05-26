@@ -2,27 +2,31 @@ import ajax from './ajax'
 import conf from '../conf'
 
 export default {
-  getFeedBackType (params) {
-    return ajax.post('system/setting', params)
-  },
-  submitFeedBack (params) {
-    return ajax.post('member/feedBack', {form: params})
-  },
-  miniProgramLogin (params) {
-    return ajax.post('common/miniProgramLogin', params)
+  miniProgramLogin (params) { 
+    return ajax.post('contractC/common/miniProgramLogin', params)
   },
   wxDataCrypt (params) {
     return ajax.post('common/wxDataCrypt', params)
   },
   autoLogin (params) {
-    return ajax.post('common/login', params)
+    return ajax.post('contractC/common/login', params)
   },
   sendMsg (params) {
-    return ajax.post('common/sendMsg', params)
-  },
+    return ajax.post('contractC/common/sendMsg', params)
+  }, 
   register (params) {
-    return ajax.post('common/bind', {form: params})
+    return ajax.post('contractC/common/bind', {form: params})
   },
+  contractList (params = null) {
+    return ajax.post('contractC/customer/contractList', {form: params})
+  },
+  personAuth (params) {
+    return ajax.post('contractC/customer/personAuth', {form: params})
+  }, 
+  contractRecordDetail (params) {
+    return ajax.post('contractC/customer/contractRecordDetail', params)
+  },
+  
   /**
    * 
    * @param {*} params  {image_file: '文件地址'}

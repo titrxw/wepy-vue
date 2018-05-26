@@ -1,20 +1,17 @@
 <style lang="css">
-
-.container {
-  background: #f9f9f9;
-  overflow: hidden;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
-.container::before {
-  position: fixed;
-  top: 0;
-  left: 0;
-  content: ' ';
+@import '/zanui/helper.wxss';
+page {
   width: 100%;
-  height: 1rpx;
-  background-color: #e2e2e2;
-  z-index: 5;
+  height: 100%;
+  background: #fff;
+  border: none;
+}
+.container {
+  border: none;
+  background: #fff;
+  overflow: hidden;
+  min-height: 100px;
+  box-sizing: border-box;
 }
 textarea {
   width: auto;
@@ -22,6 +19,29 @@ textarea {
   display: block;
   position: relative;
   font-size: 14px;
+}
+icon {
+  display: inline-block;
+  font-size: 0;
+  margin: 0 auto;
+}
+.background-fff {
+  background: #fff;
+}
+.cell--without-border::after {
+  border: 0 none !important;
+}
+.padding-15 {
+  padding: 15px;
+}
+.margin-auto {
+  margin: 0 auto;
+}
+.padding-top-15 {
+  padding-top: 15px;
+}
+.full-height{
+  height:100%;
 }
 </style>
 
@@ -31,13 +51,29 @@ import 'wepy-async-function';
 import G from './conf';
 import qs from 'qs';
 import api from './api';
-import store from './store';
+import Tip from 'tip';
+import Validate from './libs/validate'
 
 export default class extends wepy.app {
   // 这里只能是静态数据
   config = {
     pages: [
-      'pages/index'
+      'pages/customer/index',
+      'pages/customer/login',
+      'pages/business/index',
+      'pages/business/login',
+      'pages/index',
+      'pages/customer/authentication',
+      'pages/customer/auth_success',
+      'pages/customer/contract',
+      'pages/customer/progress',
+      'pages/business/pact/index',
+      'pages/business/pact/add',
+      'pages/business/pact/detail',
+      'pages/business/pact/submit',
+      'pages/business/progress/index',
+      'pages/business/progress/add',
+      'pages/business/progress/submit'
     ],
     window: {
       backgroundTextStyle: 'light',
@@ -45,27 +81,29 @@ export default class extends wepy.app {
       navigationBarTitleText: 'WeChat',
       navigationBarTextStyle: 'black'
     }
-  }
+  };
+  
   constructor() {
     super();
     this.use('requestfix');
-    wepy.G = G;
+    console.log(this)
   }
 
   onLaunch(options) {
+    console.log(this)
+    console.log(options)
     let _self = this;
-
-    // wepy请求hook
     this.intercept('request', {
       config(res) {
-        res.data.token = wepy.G.token;
+        res.data.token = G.token;
         res.data = qs.stringify(res.data);
 
-        if (!/^http(.*)/i.test(res.url)) {
-          res.url = wepy.G.apiHost + res.url;
+        if (!Validate.isUrl(res.url)) {
+          res.url = G.apiHost + res.url;
         }
+
         if (res.method == 'GET') {
-          res.url = res.url + '?' + res.data
+          res.url = res.url + '?' + res.data;
         }
 
         return res;
@@ -73,7 +111,7 @@ export default class extends wepy.app {
       success(res) {
         if (typeof res.data == 'string') {
           // 这里暂时有问题
-          store.actions.msg('系统错误');
+          Tip.errorToast('数据格式错误' + res.data);
           return false;
         }
         // 业务需求
@@ -81,21 +119,23 @@ export default class extends wepy.app {
           case 200:
             return res.data.data;
             break;
-          case 300:
+          case 401:
             G.token = '';
-            _self.autoLogin();
+            wx.redirectTo({
+              url: '../index'
+            });
             return false;
             break;
           case 302:
             G.token = '';
-            wx.navigateTo({
+            wx.redirectTo({
               url: 'login'
             });
             return false;
             break;
           default:
             if (res.data.ret) {
-              store.actions.msg(res.data.msg);
+              Tip.errorToast('数据格式错误' + res.data.msg);
               return false;
             }
             return res.data;
@@ -104,13 +144,38 @@ export default class extends wepy.app {
         return false;
       },
       fail(p) {
-        // 这里暂时有问题
-        store.actions.msg('系统错误');
+        Tip.errorToast('系统错误');
         return false;
       }
     });
-
-    this.login();
+    this.intercept('uploadFile', {
+      config(p) {
+        p.name = 'file';
+        if (!p.formData) {
+          p.formData = {};
+        }
+        p.formData['token'] = G.token;
+        return p;
+      },
+      success(p) {
+        try {
+          p.data = JSON.parse(p.data);
+        } catch (e) {
+          Tip.errorToast('数据格式错误' + p.data);
+          return false;
+        }
+        if (p.data.ret == 200 && p.data.data.url) {
+          return p.data.data.url;
+        } else {
+          Tip.errorToast('上传失败' + p.data.msg);
+          return false;
+        }
+      },
+      fail(p) {
+        Tip.errorToast('系统错误');
+        return false;
+      }
+    });
     wx.getSystemInfo({
       success: function(res) {
         wepy.G.systemInfo = res;
@@ -118,7 +183,7 @@ export default class extends wepy.app {
     });
   }
 
-  login() {
+  login(callback = null) {
     let _self = this;
     wx.login({
       success: async function(res) {
@@ -126,33 +191,30 @@ export default class extends wepy.app {
           let result = await api.miniProgramLogin({ code: res.code });
           if (result) {
             wepy.G.openId = result.openid;
-            _self.autoLogin();
+            if (callback) {
+              callback();
+            }
           }
         } else {
-          store.actions.msg('登录失败！' + res.errMsg);
+          Tip.errorToast('登录失败！' + res.errMsg);
         }
       }
     });
   }
-  // 系统登录
-  async autoLogin() {
-    let result = await api.autoLogin({ openid: wepy.G.openId });
-    if (result) {
-      wepy.G.token = result.token;
-    }
-  }
 
-  // getUserInfo() {
-  //   wepy.getUserInfo({
-  //     async success(res) {
-  //       wepy.G.userInfo = res;
-  //       let result = await api.wxDataCrypt({
-  //         encryptedData: res.encryptedData,
-  //         iv: res.iv,
-  //         sessionKey: wepy.G.sessionKey
-  //       });
-  //     }
-  //   });
-  // }
+  getUserInfo() {
+    wx.getSetting({
+      success: function(res) {
+        if (res.authSetting['scope.userInfo']) {
+          // 已经授权，可以直接调用 getUserInfo 获取头像昵称
+          wx.getUserInfo({
+            success: function(res) {
+              console.log(res);
+            }
+          });
+        }
+      }
+    });
+  }
 }
 </script>

@@ -1,17 +1,20 @@
 export default {
-  token: '',
-  imgHost:  '',
-  uploadHost:  '',
-  apiHost:  '',
-  msg: '',
+    token: '',
+    approveStatus: 1,
+    imgHost: '',
+    uploadHost: '',
+    msg: '',
 
-  
-  appId: '',
-  openId: '',
-  sessionKey: '',
-  unionId: '',
+    appId: '',
+    openId: '',
+    sessionKey: '',
+    unionId: '',
 
 
-  userInfo: {},
-  systemInfo: {}
+    userInfo: {},
+    systemInfo: {},
+
+
+    faceApiKey: '',
+    faceApiSecret: ''
 }
