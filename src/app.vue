@@ -12,6 +12,7 @@ page {
   overflow: hidden;
   min-height: 100px;
   box-sizing: border-box;
+  HEIGHT:100%;
 }
 textarea {
   width: auto;
@@ -34,6 +35,9 @@ icon {
 .padding-15 {
   padding: 15px;
 }
+.padding-top-15{
+  padding-top:15px;
+}
 .margin-auto {
   margin: 0 auto;
 }
@@ -42,6 +46,9 @@ icon {
 }
 .full-height{
   height:100%;
+}
+.zan-loadmore__tips{
+  background: #f1f2f7 !important;
 }
 </style>
 
@@ -58,22 +65,7 @@ export default class extends wepy.app {
   // 这里只能是静态数据
   config = {
     pages: [
-      'pages/customer/index',
-      'pages/customer/login',
-      'pages/business/index',
-      'pages/business/login',
-      'pages/index',
-      'pages/customer/authentication',
-      'pages/customer/auth_success',
-      'pages/customer/contract',
-      'pages/customer/progress',
-      'pages/business/pact/index',
-      'pages/business/pact/add',
-      'pages/business/pact/detail',
-      'pages/business/pact/submit',
-      'pages/business/progress/index',
-      'pages/business/progress/add',
-      'pages/business/progress/submit'
+      'pages/login'
     ],
     window: {
       backgroundTextStyle: 'light',
@@ -86,15 +78,15 @@ export default class extends wepy.app {
   constructor() {
     super();
     this.use('requestfix');
-    console.log(this)
   }
 
   onLaunch(options) {
-    console.log(this)
-    console.log(options)
     let _self = this;
     this.intercept('request', {
       config(res) {
+        if (!res.data) {
+          res.data = {}
+        }
         res.data.token = G.token;
         res.data = qs.stringify(res.data);
 
@@ -122,7 +114,7 @@ export default class extends wepy.app {
           case 401:
             G.token = '';
             wx.redirectTo({
-              url: '../index'
+              url: 'login'
             });
             return false;
             break;
@@ -135,7 +127,11 @@ export default class extends wepy.app {
             break;
           default:
             if (res.data.ret) {
-              Tip.errorToast('数据格式错误' + res.data.msg);
+              wx.showToast({
+                title: res.data.msg,
+                icon: 'none',
+                duration: 2000
+              });
               return false;
             }
             return res.data;
@@ -188,11 +184,11 @@ export default class extends wepy.app {
     wx.login({
       success: async function(res) {
         if (res.code) {
-          let result = await api.miniProgramLogin({ code: res.code });
+        let result = await api.miniProgramLogin({ code: res.code });
           if (result) {
-            wepy.G.openId = result.openid;
+            G.openId = result.openid;
             if (callback) {
-              callback();
+              callback(res);
             }
           }
         } else {
@@ -202,19 +198,19 @@ export default class extends wepy.app {
     });
   }
 
-  getUserInfo() {
-    wx.getSetting({
-      success: function(res) {
-        if (res.authSetting['scope.userInfo']) {
-          // 已经授权，可以直接调用 getUserInfo 获取头像昵称
-          wx.getUserInfo({
-            success: function(res) {
-              console.log(res);
-            }
-          });
-        }
-      }
-    });
-  }
+  // getUserInfo() {
+  //   wx.getSetting({
+  //     success: function(res) {
+  //       if (res.authSetting['scope.userInfo']) {
+  //         // 已经授权，可以直接调用 getUserInfo 获取头像昵称
+  //         wx.getUserInfo({
+  //           success: function(res) {
+  //             console.log(res);
+  //           }
+  //         });
+  //       }
+  //     }
+  //   });
+  // }
 }
 </script>

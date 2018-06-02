@@ -1,5 +1,8 @@
 <template>
-  <view class="background-fff full-height">
+  <view class="background-fff full-height" style=" overflow-x: hidden">
+      <view class="zan-cell cell--without-border::after zan-field title">
+        <text>登录</text>
+      </view>
       <view class="zan-cell zan-field">
         <input
           type="number"
@@ -14,11 +17,11 @@
             bindinput="bindCodeInput"
           class="zan-field__input zan-cell__bd"/>
         <view class="zan-cell__ft">
-          <button class="zan-btn zan-btn--mini zan-btn--primary" disabled="{{hasSend}}" @tap="sendMsg">{{ sendMsgBtnText }}</button>
+          <text  disabled="{{hasSend}}" @tap="sendMsg">{{ sendMsgBtnText }}</text>
         </view>
       </view>
       <view class="zan-btns">
-        <button @tap="submit">登录</button>
+        <button class="loginBtn" @tap="submit">登录</button>
       </view>
     </view>
 </template>
@@ -28,6 +31,9 @@ import api from '@/api';
 import Validate from '@/libs/validate'
 import Tip from 'tip'
 export default class Login extends page {
+  config = {
+    navigationBarTitleText: '登录'
+  };
   data = {
     hasSend: false,
     sendMsgBtnText: '获取验证码',
@@ -39,6 +45,9 @@ export default class Login extends page {
   };
   methods = {
     async sendMsg() {
+      if (this.hasSend) {
+        return false;
+      }
       let msg = '';
       if (!Validate.isMobile(this.form.mobile)) {
         msg = '请输入正确的手机号码';
@@ -48,20 +57,25 @@ export default class Login extends page {
         return false;
       }
 
+      Tip.showLoading()
       this.hasSend = true;
       let result = await api.sendMsg({
         mobile: this.form.mobile
       });
+      Tip.hideLoading()
       if (result) {
-        let sec = 59;
-        let _self = this;
+        var sec = 60;
+        this.sendMsgBtnText = sec + 's后重新获取';
+        this.$apply();
+        --sec;
+        var _self = this;
         var timer = setInterval(function() {
           if (sec == 0) {
             _self.hasSend = false;
             _self.sendMsgBtnText = '获取验证码';
             clearInterval(timer);
           } else {
-            _self.sendMsgBtnText = sec + '后重新获取';
+            _self.sendMsgBtnText = sec + 's后重新获取';
           }
           --sec;
           _self.$apply();
@@ -76,7 +90,7 @@ export default class Login extends page {
     },
     async submit() {
       let msg = '';
-      if (!/^1[3456789]\d{9}$/.test(this.form.mobile)) {
+      if (!Validate.isMobile(this.form.mobile)) {
         msg = '请输入正确的手机号码';
       } else if (!this.form.code) {
         msg = '请输入手机验证码';
@@ -92,6 +106,7 @@ export default class Login extends page {
       this.form.openid = this.G.openId;
       let result = await api.register(this.form);
       if (result) {
+        this.G.module = 'customer'
         this.G.token = result.token
         this.G.approveStatus = result.approveStatus
         this.$redirect({
@@ -105,5 +120,14 @@ export default class Login extends page {
 <style scoped>
 @import '/zanui/btn';
 @import '/zanui/cell';
+.title{
+  margin-top: 190rpx;
+  font-size: 65rpx;
+ 
+}
+.loginBtn{
+  background: #444444;
+  color: #fff;
+}
 </style>
 

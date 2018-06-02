@@ -1,6 +1,9 @@
 import BaseConf from './base'
 
-const devConfig = {...BaseConf, 
+const devConfig = {...BaseConf,
+    imgHost: '',
+    uploadHost: '',
+    apiHost: '',
 }
 
 export default devConfig

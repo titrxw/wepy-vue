@@ -9,7 +9,7 @@ module.exports = {
     alias: {
       '@': path.join(__dirname, 'src'),
       page: path.join(__dirname, 'src/page.js'),
-      component: path.join(__dirname, 'src/component.js'),
+      'tip': path.join(__dirname, 'src/libs/tip.js')
     }
   },
   compilers: {
@@ -33,6 +33,7 @@ module.exports = {
   plugins: {
   },
   appConfig: {
+    env: process.env.NODE_ENV,
     noPromiseAPI: ['createSelectorQuery']
   }
 }

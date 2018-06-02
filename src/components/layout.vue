@@ -11,26 +11,24 @@
 </template>
 
 <script>
-import wepy from 'wepy'
-export default class Layout extends wepy.component {
-};
+import wepy from 'wepy';
+export default class Layout extends wepy.component {}
 </script>
-
 <style lang="scss" scoped>
 @import '../zanui/common.scss';
-view{
-  display:unset;
+view {
+  display: unset;
 }
 .wepy {
   &-view {
     margin: 0 auto;
     &:before {
-      content: '';
+      content: ' ';
       display: block;
       width: 100%;
     }
     &:after {
-      content: '';
+      content: ' ';
       display: block;
       width: 100%;
     }
@@ -53,7 +51,7 @@ view{
     position: relative;
     margin-bottom: -1px;
     &:after {
-      content: '';
+      content: ' ';
       display: block;
       width: 100%;
     }

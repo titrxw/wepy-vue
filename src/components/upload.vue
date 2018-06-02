@@ -3,7 +3,7 @@
       <repeat for="{{tmpPics}}" key="index" index="index" item="item">
         <image @tap="deleteImg({{index}})" class="upload-img" style="{{'width:' + width + 'px;height:' + width + 'px;'}}"  src="{{imgHost + item}}"></image>
       </repeat>
-      <button class="upload-btn" @tap="upload" style="{{'width:' + width + 'px;height:' + width + 'px;display:block;'}}"  >上传</button>
+      <view class="upload-btn zan-icon zan-icon-photograph" @tap="upload" style="{{'width:' + width + 'px;height:' + width + 'px;display:block;'}}"  ></view>
   </view>
 </template>
 <script>
@@ -127,19 +127,23 @@ export default class Upload extends wepy.component {
 }
 </script>
 <style scoped>
+@import '/zanui/icon';
 .upload {
   padding-left: 10px;
   padding-right: 10px;
   display: inline-block;
+  text-align:center;
 }
 .upload-img,
 .upload-btn {
   margin-top: 15px;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
   margin-left: 5px;
   margin-right: 5px;
   display: block;
   float: left;
+  line-height:65px;
+
 }
 </style>
 

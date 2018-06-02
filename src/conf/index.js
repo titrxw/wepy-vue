@@ -1,10 +1,9 @@
 
 import wepy from 'wepy'
-import devConf from './dev'
-// import producationConf from './producation'
+// import devConf from './dev'
+import conf from './producation'
 
-
-wepy.G = devConf;
+wepy.G = conf;
 wepy.G.isApprove = function () {
   if (wepy.G.approveStatus == 3) {
     return true
@@ -12,4 +11,4 @@ wepy.G.isApprove = function () {
   return false
 }
 
-export default devConf;
+export default conf;

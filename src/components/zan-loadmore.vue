@@ -136,3 +136,8 @@ export default class zanLoadmore extends wepy.component {
   }
 }
 </script>
+<style>
+.transparent{
+  background:transparent;
+}
+</style>
