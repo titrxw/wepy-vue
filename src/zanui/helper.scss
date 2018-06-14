@@ -55,15 +55,14 @@
 
 .zan-arrow {
   position: absolute;
-  right: 15px;
-  top: 50%;
+  right: 0px;
   display: inline-block;
   height: 6px;
   width: 6px;
   border-width: 2px 2px 0 0;
   border-color: #c8c8c8;
   border-style: solid;
-  transform: translateY(-50%) matrix(0.71, 0.71, -0.71, 0.71, 0, 0);
+  transform: translateY(0%) matrix(0.71, 0.71, -0.71, 0.71, 0, 0);
 }
 
 .zan-ellipsis {

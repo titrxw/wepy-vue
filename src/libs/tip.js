@@ -1,17 +1,17 @@
 export default {
-  errorToast(msg) {
+  errorToast(msg, icon = 'none', duration = 2000) {
     wx.showToast({
       title: msg,
-      icon: 'none',
-      duration: 2000
+      icon: icon,
+      duration: duration
     })
   },
 
-  successToast (msg) {
+  successToast (msg, duration = 2000) {
     wx.showToast({
       title: msg,
       icon: 'success',
-      duration: 2000
+      duration: duration
     })
   },
 

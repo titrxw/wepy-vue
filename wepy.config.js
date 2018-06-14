@@ -9,6 +9,7 @@ module.exports = {
     alias: {
       '@': path.join(__dirname, 'src'),
       page: path.join(__dirname, 'src/page.js'),
+      app: path.join(__dirname, 'src/application.js'),
       'tip': path.join(__dirname, 'src/libs/tip.js')
     }
   },

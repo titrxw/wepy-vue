@@ -122,6 +122,11 @@ export default class zanToast extends wepy.component {
     direction: {
       type: String,
       default: ''
+    },
+    show: {
+      type: Boolean,
+      default:false,
+      twoWay: true
     }
   }
   data = {
@@ -129,7 +134,14 @@ export default class zanToast extends wepy.component {
   }
   methods = {
     togglePopup() {
-      this.showPopup = !this.showPopup
+      this.show = !this.show
+      this.$apply()
+    }
+  }
+  watch = {
+    show (val) {
+      console.log(val)
+      this.showPopup = val
       this.$apply()
     }
   }
