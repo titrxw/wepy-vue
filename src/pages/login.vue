@@ -32,7 +32,8 @@ import Validate from '@/libs/validate'
 import Tip from 'tip'
 export default class Login extends page {
   config = {
-    navigationBarTitleText: '登录'
+    navigationBarTitleText: '登录',
+    requireLogin: false
   };
   data = {
     hasSend: false,

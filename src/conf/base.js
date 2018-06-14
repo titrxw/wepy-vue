@@ -1,17 +1,17 @@
 export default {
-  token: '',
-  approveStatus: 1,
-  userLogin: false,
-  businessLogin: false,
-  msg: '',
-  appId: 'wxe0be55a8c3e0ac3b',
-  openId: '',
-  sessionKey: '',
-  unionId: '',
+    token: '',
+    approveStatus: 1,
+    userLogin: false,
+    businessLogin: false,
+    msg: '',
+    appId: '',
+    openId: '',
+    sessionKey: '',
+    unionId: '',
 
 
-  userInfo: {},
-  systemInfo: {},
+    userInfo: {},
+    systemInfo: {},
 
-  uploadFileSize: 2048
+    uploadFileSize: 2048
 }
