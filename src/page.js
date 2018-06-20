@@ -1,27 +1,32 @@
 import wepy from 'wepy'
 export default class page extends wepy.page {
-    constructor() {
-        super();
-    }
+  constructor() {
+    super();
+  }
 
-    mounted(options) {
+  mounted(options) {
 
-    }
+  }
 
-    render(options) {
-        this.setData('G', wepy.G)
-        this.G = wepy.G
-        this.mounted(options)
-    }
+  render(options) {
+    this.setData('G', wepy.G)
+    this.G = wepy.G
+    this.mounted(options)
+  }
 
-    onLoad(options) {
-        if (this.config && this.config.requireLogin) {
-            let self = this
-            this.$parent.autoLogin(function() {
-                self.render(options)
-            })
-        } else {
-            this.render(options)
-        }
+  onLoad(options) {
+    if (this.config && this.config.requireTabbar) {
+      wx.showTabBar()
+    } else{
+      wx.hideTabBar()
     }
+    if (this.config && this.config.requireLogin) {
+      let self = this
+      this.$parent.autoLogin(function () {
+        self.render(options)
+      })
+    } else {
+      this.render(options)
+    }
+  }
 }
