@@ -24,6 +24,7 @@ export default class Auth extends base {
     return result
   }
   static async register(params) {
+    params['openid'] = this.G.openId
     let result = await this.post('mc/common/bind', {
       form: params
     })
