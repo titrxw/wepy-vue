@@ -1,19 +1,13 @@
-
 import wepy from 'wepy';
 import 'wepy-async-function';
 import G from './conf';
 import qs from 'qs';
-import api from './api';
+import api from './api/auth';
 import Tip from 'tip';
 import Validate from './libs/validate'
 
 export default class app extends wepy.app {
-
-  constructor() {
-    super();
-  }
-
-  mounted (options) {
+  mounted(options) {
 
   }
 
@@ -47,15 +41,15 @@ export default class app extends wepy.app {
           case 200:
             return res.data.data;
           case 401:
-            G.token = '';
+            api.unLogin()
             wx.redirectTo({
-              url: 'login'
+              url: '/login'
             });
             return false;
           case 302:
-            G.token = '';
+            api.unLogin()
             wx.redirectTo({
-              url: 'login'
+              url: '/login'
             });
             return false;
           default:
@@ -100,7 +94,7 @@ export default class app extends wepy.app {
       }
     });
     wx.getSystemInfo({
-      success: function(res) {
+      success: function (res) {
         wepy.G.systemInfo = res;
       }
     });
@@ -108,48 +102,52 @@ export default class app extends wepy.app {
   }
 
   getOpenId(callback = null) {
-    wx.login({
-      success: async function(res) {
-        if (res.code) {
-          let result = await api.miniProgramLogin({ code: res.code });
-          if (result) {
-            G.openId = result.openid;
-            if (callback) {
-              callback(res);
-            }
-          }
-        } else {
-          Tip.errorToast('登录失败！' + res.errMsg);
-        }
+    if (G.openId) {
+      if (callback) {
+        callback({});
       }
-    });
+    } else {
+      wx.login({
+        success: async function (res) {
+          if (res.code) {
+            let result = await api.miniProgramLogin(res.code);
+            if (result) {
+              if (callback) {
+                callback(res);
+              }
+            }
+          } else {
+            Tip.errorToast('登录失败！' + res.errMsg);
+          }
+        }
+      });
+    }
   }
 
-  async doLogin (callback = null) {
+  async doLogin(callback = null) {
     if (G.token) {
       Tip.hideLoading();
       callback({})
       return true
     }
-    let result = await api.autoLogin({ openid: G.openId });
+    let result = await api.autoLogin();
+    Tip.hideLoading();
     if (result) {
-      Tip.hideLoading();
-      G.token = result.token;
       if (callback) {
         callback(result);
       }
     }
   }
 
-  autoLogin (callback = null) {
+  autoLogin(callback = null) {
     Tip.showLoading();
-    if (G.openId) {
-      this.doLogin(callback)
-    } else {
-      let self = this
-      this.getOpenId(function (result) {
-        self.doLogin(callback)
-      })
-    }
+    let self = this
+    this.getOpenId(function (result) {
+      self.doLogin(callback)
+    })
+  }
+
+  onError(msg) {
+    console.log(msg)
   }
 }
