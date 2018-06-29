@@ -8,6 +8,9 @@ export default {
     openId: '',
     sessionKey: '',
     unionId: '',
+    imgHost: '',
+    uploadHost: '',
+    apiHost: '',
 
 
     userInfo: {},

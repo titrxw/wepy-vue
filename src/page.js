@@ -1,9 +1,5 @@
 import wepy from 'wepy'
 export default class page extends wepy.page {
-  constructor() {
-    super();
-  }
-
   mounted(options) {
 
   }
@@ -11,6 +7,9 @@ export default class page extends wepy.page {
   render(options) {
     this.setData('G', wepy.G)
     this.G = wepy.G
+    this.setData('isMounted', true)
+    this.isMounted = true
+
     this.mounted(options)
   }
 

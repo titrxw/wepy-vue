@@ -1,5 +1,21 @@
 export default {
-  errorToast(msg, icon = 'none', duration = 2000) {
+  errorToast(msg) {
+    wx.showToast({
+      title: msg,
+      icon: 'none',
+      duration: 2000
+    })
+  },
+
+  successToast (msg) {
+    wx.showToast({
+      title: msg,
+      icon: 'success',
+      duration: 2000
+    })
+  },
+
+  toast (msg, icon = 'none', duration = 2000) {
     wx.showToast({
       title: msg,
       icon: icon,
@@ -7,17 +23,9 @@ export default {
     })
   },
 
-  successToast (msg, duration = 2000) {
-    wx.showToast({
-      title: msg,
-      icon: 'success',
-      duration: duration
-    })
-  },
-
-  showLoading () {
+  showLoading (title = '加载中') {
     wx.showLoading({
-      title: '加载中',
+      title: title,
     })
   },
 
@@ -34,6 +42,25 @@ export default {
         title: title,
         content: text,
         showCancel: false,
+        success: res => {
+          resolve(res)
+        },
+        fail: res => {
+          reject(res);
+        }
+      })
+    })
+  },
+
+  /**
+   * 弹出确认窗口
+   */
+  confirm (text, title = '提示') {
+    return new Promise((resolve, reject) => {
+      wx.showModal({
+        title: title,
+        content: text,
+        showCancel: true,
         success: res => {
           resolve(res)
         },
