@@ -1,12 +1,12 @@
 import G from '@/conf';
-import wepy from 'wepy';
 import md5 from 'md5'
+import ajax from './ajax'
 
 export default class base {
     static single = {}
     static G = G
 
-    static post(url, data, header = {}, isSingle = true) {
+    static async post(url, data, header = {}, isSingle = true) {
         let key = url;
         if (isSingle) {
             if (data) {
@@ -24,32 +24,14 @@ export default class base {
             }
             this.single[key] = true
         }
-        let self = this
-        return new Promise((resolve, reject) => {
-            wepy.request({
-                url: url,
-                data: data,
-                method: 'POST',
-                header: {
-                    ...header,
-                    'content-type': 'application/x-www-form-urlencoded' // 默认值
-                },
-                success: function(res) {
-                    if (isSingle) {
-                        delete self.single[key]
-                    }
-                    resolve(res)
-                },
-                fail: function(error) {
-                    if (isSingle) {
-                        delete self.single[key]
-                    }
-                    reject(reject)
-                }
-            })
-        });
+
+        let result = await ajax.post(url, data, header)
+        if (isSingle) {
+            delete this.single[key]
+        }
+        return result
     }
-    static get(url, data, header = {}, isSingle = true) {
+    static async get(url, data, header = {}, isSingle = true) {
         let key = url;
         if (isSingle) {
             if (data) {
@@ -67,26 +49,11 @@ export default class base {
             }
             this.single[key] = true
         }
-        let self = this
-        return new Promise((resolve, reject) => {
-            wepy.request({
-                url: url,
-                data: data,
-                method: 'GET',
-                header: header,
-                success: function(res) {
-                    if (isSingle) {
-                        delete self.single[key]
-                    }
-                    resolve(res)
-                },
-                fail: function(error) {
-                    if (isSingle) {
-                        delete self.single[key]
-                    }
-                    reject(reject)
-                }
-            })
-        });
+
+        let result = await ajax.get(url, data, header)
+        if (isSingle) {
+            delete this.single[key]
+        }
+        return result
     }
 }
