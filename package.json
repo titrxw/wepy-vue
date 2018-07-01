@@ -17,6 +17,7 @@
   "author": "stars",
   "license": "MIT",
   "dependencies": {
+    "md5": "^2.2.1",
     "redux": "^4.0.0",
     "wepy": "^1.6.0",
     "wepy-async-function": "^1.4.4",
