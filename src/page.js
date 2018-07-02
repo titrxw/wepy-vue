@@ -71,7 +71,7 @@ export default class page extends wepy.page {
         }
         if (this.config && this.config.requireLogin) {
             let self = this
-            this.$parent.autoLogin(function() {
+            this.autoLogin(function() {
                 self.render(options)
             })
         } else {
