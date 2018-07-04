@@ -12,7 +12,7 @@
       </view>
       <view>
         <view class="zan-panel-title">
-          相寓商城
+          
         </view>
         <view class="list zan-panel" style="background: #f5f5f5;">
           <repeat for='{{pageData}}' key="index" index='index' item='item'>
@@ -39,15 +39,15 @@
 </template>
 <script>
 import page from 'page';
-import api from '@/api';
-import GoodsItem from './good-item';
+// import api from '@/api';
+// import GoodsItem from './good-item';
 import pagination from '@/mixin/pagination'
 export default class Index extends page {
   config = {
     navigationBarTitleText: '商城'
   };
   components = {
-    GoodsItem
+    // GoodsItem
   };
   data = {
     banner:'https://webwx.aijiatui.com/website-new/img/section1-left.jpg'
@@ -71,7 +71,7 @@ export default class Index extends page {
   };
 
   getData(params) {
-    return api.goodsList(params)
+    // return api.goodsList(params)
   }
   async onShow() {
     this.reload()

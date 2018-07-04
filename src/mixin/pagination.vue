@@ -1,7 +1,7 @@
 <script>
   import wepy from 'wepy';
   import Tip from 'tip';
-  import Page from '@/libs/Page'
+  import Page from '@/libs/page'
   /**
    * 分页通用方法
   */
