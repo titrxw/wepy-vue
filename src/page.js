@@ -67,11 +67,6 @@ export default class page extends wepy.page {
     }
 
     onLoad(options) {
-        if (this.config && this.config.requireTabbar) {
-            wx.showTabBar()
-        } else {
-            wx.hideTabBar()
-        }
         if (this.config && this.config.requireLogin) {
             let self = this
             this.autoLogin(function() {
