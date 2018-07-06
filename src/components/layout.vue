@@ -2,9 +2,9 @@
   <view class="wepy-view">
       <view class="wepy-flexview">
         <slot name="navbar"></slot>
-        <view class="wepy-scrollview" ref="scrollView" id="scrollView">
-            <slot></slot>
-        </view>
+        <scroll-view class="wepy-scrollview" scroll-y  bindscrolltolower="tolower">
+        <slot></slot>
+        </scroll-view>
         <slot name="tabbar"></slot>
       </view>
   </view>
@@ -12,7 +12,14 @@
 
 <script>
 import wepy from 'wepy';
-export default class Layout extends wepy.component {}
+export default class Layout extends wepy.component {
+  methods= {
+    tolower (e) {
+      this.$emit('tolower')
+    }
+  }
+    
+}
 </script>
 <style lang="scss" scoped>
 @import '../zanui/common.scss';
@@ -23,12 +30,12 @@ view {
   &-view {
     margin: 0 auto;
     &:before {
-      content: ' ';
+      content: '';
       display: block;
       width: 100%;
     }
     &:after {
-      content: ' ';
+      content: '';
       display: block;
       width: 100%;
     }
@@ -51,7 +58,7 @@ view {
     position: relative;
     margin-bottom: -1px;
     &:after {
-      content: ' ';
+      content: '';
       display: block;
       width: 100%;
     }
