@@ -54,7 +54,7 @@ export default class page extends wepy.page {
 
     }
 
-    render(options) {
+    async render(options) {
         this.setData('G', wepy.G)
         this.G = wepy.G
         
