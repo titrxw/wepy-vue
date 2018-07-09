@@ -1,9 +1,9 @@
 <template>
   <view class="foot">
     <navigator target="miniProgram" class="zan-center" open-type="navigate" app-id="wxef93993addb61003" path="" extra-data="" version="release">
-        <view class="zan-center a-text" >常见问题</view>
+        <view class="zan-center text" >常见问题</view>
     </navigator>
-    <view class="zan-center">Copyright © 2017-2018 太原我爱我家</view>
+    <view class="zan-center">Copyright © 2017-2018 </view>
   </view>
 </template>
 <script>
@@ -13,7 +13,7 @@ export default class Foot extends wepy.component {
 }
 </script>
 <style scoped>
-.a-text{
+.text{
   color:#586C94;
   margin-bottom:5px;
 }

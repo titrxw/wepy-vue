@@ -74,7 +74,9 @@ export default class Index extends page {
     // return api.goodsList(params)
   }
   async onShow() {
-    this.reload()
+    if (this.isMounted) {
+      this.reload()
+    }
   }
 
   mixins = [pagination];

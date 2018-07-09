@@ -57,12 +57,12 @@ export default class page extends wepy.page {
     async render(options) {
         this.setData('G', wepy.G)
         this.G = wepy.G
-        
+
         await this.mounted(options)
-    
+
         this.setData('isMounted', true)
         this.isMounted = true
-    
+
         this.$apply()
     }
 

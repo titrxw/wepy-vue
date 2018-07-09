@@ -79,6 +79,8 @@ export default class Login extends page {
           --sec;
           _self.$apply();
         }, 1000);
+      } else {
+        this.hasSend = false
       }
     },
     bindMobileInput (e) {
