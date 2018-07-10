@@ -1,8 +1,7 @@
 import wepy from 'wepy';
 import 'wepy-async-function';
 import G from './conf';
-import qs from 'qs';
-import api from './api/auth';
+import user from './api/user';
 import Tip from 'tip';
 import Validate from './libs/validate'
 
@@ -17,15 +16,10 @@ export default class app extends wepy.app {
                 if (!res.data) {
                     res.data = {}
                 }
-                res.data.token = G.token;
-                res.data = qs.stringify(res.data);
+                res.data.token = user.token;
 
                 if (!Validate.isUrl(res.url)) {
                     res.url = G.apiHost + res.url;
-                }
-
-                if (res.method == 'GET') {
-                    res.url = res.url + '?' + res.data;
                 }
 
                 return res;
@@ -41,13 +35,13 @@ export default class app extends wepy.app {
                     case 200:
                         return res.data.data;
                     case 401:
-                        api.unLogin()
+                        user.unLogin()
                         wx.redirectTo({
                             url: '/login'
                         });
                         return false;
                     case 302:
-                        api.unLogin()
+                        user.unLogin()
                         wx.redirectTo({
                             url: '/login'
                         });
@@ -71,7 +65,7 @@ export default class app extends wepy.app {
                 if (!p.formData) {
                     p.formData = {};
                 }
-                p.formData['token'] = G.token;
+                p.formData['token'] = user.token;
                 return p;
             },
             success(p) {
@@ -95,7 +89,7 @@ export default class app extends wepy.app {
         });
         wx.getSystemInfo({
             success: function(res) {
-                wepy.G.systemInfo = res;
+                G.systemInfo = res;
             }
         });
         this.mounted(options)

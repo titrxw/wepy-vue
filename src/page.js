@@ -1,21 +1,23 @@
 import wepy from 'wepy'
-import api from './api/auth';
+import user from '@/api/user';
 import Tip from 'tip';
+import G from '@/conf';
+
 export default class page extends wepy.page {
 
     getOpenId(callback = null) {
-        if (wepy.G.openId) {
+        if (G.openId) {
             if (callback) {
-                callback({});
+                callback();
             }
         } else {
             wx.login({
                 success: async function(res) {
                     if (res.code) {
-                        let result = await api.miniProgramLogin(res.code);
+                        let result = await user.miniProgramLogin(res.code);
                         if (result) {
                             if (callback) {
-                                callback(res);
+                                callback();
                             }
                         }
                     } else {
@@ -27,16 +29,16 @@ export default class page extends wepy.page {
     }
 
     async doLogin(callback = null) {
-        if (wepy.G.token) {
+        if (user.token) {
             Tip.hideLoading();
-            callback({})
+            callback()
             return true
         }
-        let result = await api.autoLogin();
+        let result = await user.autoLogin();
         Tip.hideLoading();
         if (result) {
             if (callback) {
-                callback(result);
+                callback();
             }
         }
     }
@@ -44,7 +46,7 @@ export default class page extends wepy.page {
     autoLogin(callback = null) {
         Tip.showLoading();
         let self = this
-        this.getOpenId(function(result) {
+        this.getOpenId(function() {
             self.doLogin(callback)
         })
     }
@@ -55,8 +57,8 @@ export default class page extends wepy.page {
     }
 
     async render(options) {
-        this.setData('G', wepy.G)
-        this.G = wepy.G
+        this.setData('G', G)
+        this.G = G
 
         await this.mounted(options)
 

@@ -27,7 +27,8 @@
 </template>
 <script>
 import page from 'page';
-import api from '@/api/auth';
+import user from '@/api/user';
+import common from '@/api/common'
 import Validate from '@/libs/validate'
 import Tip from 'tip'
 export default class Login extends page {
@@ -60,7 +61,7 @@ export default class Login extends page {
 
       Tip.showLoading()
       this.hasSend = true;
-      let result = await api.sendMsg(this.form.mobile);
+      let result = await common.sendMsg(this.form.mobile);
       Tip.hideLoading()
       if (result) {
         var sec = 60;
@@ -104,7 +105,7 @@ export default class Login extends page {
       if (!this.form.code) {
         return false;
       }
-      let result = await api.register(this.form);
+      let result = await user.register(this.form);
       if (result) {
         this.$redirect({
           url: 'index'
