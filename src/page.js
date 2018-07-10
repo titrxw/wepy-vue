@@ -4,54 +4,6 @@ import Tip from 'tip';
 import G from '@/conf';
 
 export default class page extends wepy.page {
-
-    getOpenId(callback = null) {
-        if (G.openId) {
-            if (callback) {
-                callback();
-            }
-        } else {
-            wx.login({
-                success: async function(res) {
-                    if (res.code) {
-                        let result = await user.miniProgramLogin(res.code);
-                        if (result) {
-                            if (callback) {
-                                callback();
-                            }
-                        }
-                    } else {
-                        Tip.errorToast('登录失败！' + res.errMsg);
-                    }
-                }
-            });
-        }
-    }
-
-    async doLogin(callback = null) {
-        if (user.token) {
-            Tip.hideLoading();
-            callback()
-            return true
-        }
-        let result = await user.autoLogin();
-        Tip.hideLoading();
-        if (result) {
-            if (callback) {
-                callback();
-            }
-        }
-    }
-
-    autoLogin(callback = null) {
-        Tip.showLoading();
-        let self = this
-        this.getOpenId(function() {
-            self.doLogin(callback)
-        })
-    }
-
-
     mounted(options) {
 
     }
@@ -78,4 +30,26 @@ export default class page extends wepy.page {
             this.render(options)
         }
     }
+
+    async miniProgramLogin(callback = null) {
+        Tip.showLoading();
+        let result = await user.miniProgramLogin()
+        Tip.hideLoading();
+        if (result && callback) {
+          callback()
+        }
+    
+        return result
+      }
+    
+      async autoLogin(callback = null) {
+        Tip.showLoading();
+        let result = await user.autoLogin()
+        Tip.hideLoading();
+        if (result && callback) {
+          callback()
+        }
+        
+        return result
+      }
 }
