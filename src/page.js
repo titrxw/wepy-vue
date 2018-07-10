@@ -23,7 +23,9 @@ export default class page extends wepy.page {
   async onLoad(options) {
     if (this.config) {
       if (this.config.requireAuth) {
+        Tip.showLoading()
         let result = await user.miniProgramLogin()
+        Tip.hideLoading()
         if (result) {
           this.render(options)
         } else {
@@ -31,7 +33,9 @@ export default class page extends wepy.page {
         }
         return true
       } else if (this.config.requireLogin) {
+        Tip.showLoading()
         let result = await user.autoLogin()
+        Tip.hideLoading()
         if (result) {
           this.render(options)
         } else {

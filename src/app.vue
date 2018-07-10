@@ -8,6 +8,7 @@ export default class extends app {
   // 这里只能是静态数据
   config = {
     pages: [
+      'pages/index',
       'pages/login'
     ],
     window: {
