@@ -20,12 +20,25 @@ export default class page extends wepy.page {
     this.$apply()
   }
 
+  
+  async miniProgramLogin () {
+    Tip.showLoading()
+    let result = await user.miniProgramLogin()
+    Tip.hideLoading()
+    return result
+  }
+
+  async autoLogin () {
+    Tip.showLoading()
+    let result = await user.autoLogin()
+    Tip.hideLoading()
+    return result
+  }
+
   async onLoad(options) {
     if (this.config) {
       if (this.config.requireAuth) {
-        Tip.showLoading()
-        let result = await user.miniProgramLogin()
-        Tip.hideLoading()
+        let result = await this.miniProgramLogin()
         if (result) {
           this.render(options)
         } else {
@@ -33,9 +46,7 @@ export default class page extends wepy.page {
         }
         return true
       } else if (this.config.requireLogin) {
-        Tip.showLoading()
-        let result = await user.autoLogin()
-        Tip.hideLoading()
+        let result = await this.autoLogin()
         if (result) {
           this.render(options)
         } else {

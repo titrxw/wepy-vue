@@ -36,22 +36,25 @@ export default class User extends base {
   }
 
   static async autoLogin() {
-    let result = await this.miniProgramLogin()
-    if (!result) {
-      return false;
-    }
-
-    if (this.token) {
-      return true
-    }
-    result = await this.post('common/login', {
-      openid: this.openId
+    let self = this
+    return new Promise((resolve,reject) => {
+      let result = await self.miniProgramLogin()
+      if (!result) {
+        return resolve(false);
+      }
+      
+      if (self.token) {
+        return resolve(true)
+      }
+      result = await self.post('common/login', {
+        openid: self.openId
+      })
+      if (result) {
+        self.token = result.token;
+        return resolve(true)
+      }
+      return resolve(false)
     })
-    if (result) {
-      this.token = result.token;
-      return true
-    }
-    return false
   }
 
   static async register(params) {
