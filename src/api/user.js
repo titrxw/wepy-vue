@@ -37,7 +37,7 @@ export default class User extends base {
 
   static async autoLogin() {
     let self = this
-    return new Promise((resolve,reject) => {
+    return new Promise(async (resolve,reject) => {
       let result = await self.miniProgramLogin()
       if (!result) {
         return resolve(false);
