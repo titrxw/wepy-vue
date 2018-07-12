@@ -8,20 +8,6 @@ export default class User extends base {
     static token = null;
     static lastTime = null
 
-    set token(val) {
-        this.lastTime = Date.parse(new Date()) / 1000;
-        this.token = val
-    }
-
-    get token() {
-        let curTime = Date.parse(new Date()) / 1000;
-        if (lastTime && (curTime - lastTime) > (2 * 60 * 55)) {
-            this.unlogin()
-        }
-
-        return this.token
-    }
-
 
     static async miniProgramLogin() {
         let self = this
@@ -58,14 +44,14 @@ export default class User extends base {
                 return resolve(false);
             }
 
-            if (self.token) {
+            if (self.getToken()) {
                 return resolve(true)
             }
             result = await self.post('common/login', {
                 openid: self.openId
             })
             if (result) {
-                self.token = result.token;
+                self.login(result)
                 return resolve(true)
             }
             return resolve(false)
@@ -78,12 +64,25 @@ export default class User extends base {
             form: params
         })
         if (result) {
-            this.token = result.token
+            this.login(result)
         }
         return result
     }
 
+    static login(result) {
+        this.token = result.token
+        this.lastTime = Date.parse(new Date()) / 1000;
+    }
+
     static unLogin() {
         this.token = null
+    }
+
+    static getToken() {
+        let curTime = Date.parse(new Date()) / 1000;
+        if (this.lastTime && (curTime - this.lastTime) > (2 * 60 * 55)) {
+            this.unlogin()
+        }
+        return this.token
     }
 }
