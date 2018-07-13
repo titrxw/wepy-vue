@@ -81,7 +81,9 @@ export default class User extends base {
     static getToken() {
         let curTime = Date.parse(new Date()) / 1000;
         if (this.lastTime && (curTime - this.lastTime) > (2 * 60 * 55)) {
-            this.unlogin()
+            this.unLogin()
+        } else {
+            this.lastTime = Date.parse(new Date()) / 1000;
         }
         return this.token
     }
