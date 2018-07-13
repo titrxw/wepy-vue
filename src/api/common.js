@@ -1,4 +1,4 @@
-import base from './base'
+import base from './base/base'
 /**
  * 登录类
  */
