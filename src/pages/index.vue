@@ -1,5 +1,7 @@
 <template>
     <view>
+      <!-- <authorization @success.user="" @error.user="" @getUserInfo.user=""></authorization> -->
+      <authorization ></authorization> 
       <view class="icon">
         <view @tap="goPage('shopCart')" class="zan-icon zan-icon-cart mr20 font-ico"></view>
           <view @tap="goPage('orderList')" class="zan-icon zan-icon-pending-orders mr20 font-ico"></view>
@@ -39,6 +41,7 @@
 </template>
 <script>
 import page from 'page';
+import authorization from '@/components/authorization'
 // import api from '@/api';
 // import GoodsItem from './good-item';
 import pagination from '@/mixin/pagination'
@@ -47,6 +50,7 @@ export default class Index extends page {
     navigationBarTitleText: '商城'
   };
   components = {
+    authorization
     // GoodsItem
   };
   data = {
