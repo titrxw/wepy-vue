@@ -36,6 +36,10 @@ export default class page extends wepy.page {
   }
 
   async onLoad(options) {
+    this.setData('isMounted', false)
+    this.isMounted = false
+
+    
     if (this.config) {
       if (this.config.requireAuth) {
         let result = await this.miniProgramLogin()
