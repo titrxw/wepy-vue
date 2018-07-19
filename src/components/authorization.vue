@@ -12,15 +12,17 @@
 <script>
 import G from '@/conf'
 import wepy from 'wepy';
+import api from '@/api/user';
 export default class Authorization extends wepy.component {
   data = {
     show: false
   }
   methods= {
-    authorization(e){
+    async authorization(e){
       if(e.detail.userInfo){
         this.show = false;
-        G.userInfo = e.detail.userInfo
+        G.userInfo = e.detail.userInfo;
+        await api.userAuth(e.detail);
         this.$emit('success')
       }else{
         this.$emit('error')
@@ -63,6 +65,7 @@ export default class Authorization extends wepy.component {
 </script>
 <style scoped>
 .blackBg{
+  z-index: 100;
   font-size: 26rpx;
   position: fixed;
   top: 0;

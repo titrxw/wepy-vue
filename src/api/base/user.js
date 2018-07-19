@@ -35,6 +35,13 @@ export default class User extends base {
             }
         })
     }
+    // 微信授权后保存用户信息
+    static userAuth (params) {
+        return this.post('member/completeFans', {form: {
+            headimgurl:params.userInfo.avatarUrl,
+            nickname:params.userInfo.nickName
+        }})
+    }
 
     static async autoLogin() {
         let self = this
