@@ -81,7 +81,7 @@ export default class app extends wepy.app {
                     return false;
                 }
                 if (res.data.ret == 200 && res.data.data.url) {
-                    return p.data.data.url;
+                    return res.data.data.url;
                 } else {
                     Tip.errorToast('上传失败' + res.data.msg);
                     return false;
