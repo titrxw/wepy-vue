@@ -34,7 +34,7 @@ import Tip from 'tip'
 export default class Login extends page {
   config = {
     navigationBarTitleText: '登录',
-    requireLogin: false
+    loginByAccount: false
   };
   data = {
     hasSend: false,

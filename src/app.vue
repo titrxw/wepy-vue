@@ -9,7 +9,8 @@ export default class extends app {
   config = {
     pages: [
       'pages/index',
-      'pages/login'
+      'pages/login',
+      'pages/wechat_auth'
     ],
     window: {
       backgroundTextStyle: 'light',

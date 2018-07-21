@@ -6,10 +6,11 @@ import base from './base'
 export default class User extends base {
     static openId = null;
     static token = null;
+    static sessionKey = null
     static lastTime = null
 
 
-    static async miniProgramLogin() {
+    static async miniProgramLogin(byUnionId = false) {
         let self = this
         return new Promise((resolve, reject) => {
             if (self.openId) {
@@ -23,6 +24,13 @@ export default class User extends base {
                             })
                             if (result) {
                                 self.openId = result.openid;
+                                self.sessionKey = result.session_key
+                                if (byUnionId) {
+                                    result = await self.getWUserInfo()
+                                    if (!result) {
+                                        return resolve(false)
+                                    }
+                                }
                                 return resolve(true)
                             }
                         }
@@ -35,18 +43,49 @@ export default class User extends base {
             }
         })
     }
-    // 微信授权后保存用户信息
-    static userAuth (params) {
-        return this.post('member/completeFans', {form: {
-            headimgurl:params.userInfo.avatarUrl,
-            nickname:params.userInfo.nickName
-        }})
+
+    static getWUserInfo() {
+        let self = this
+        return new Promise((resolve, reject) => {
+            wx.getSetting({
+                success: function(res) {
+                    if (res.authSetting['scope.userInfo']) {
+                        // 已经授权，可以直接调用 getUserInfo 获取头像昵称
+                        wx.getUserInfo({
+                            success: function(res) {
+                                self.G.userInfo = res.getUserInfo
+                                return resolve(true)
+                            },
+                            fail() {
+                                return resolve(false)
+                            }
+                        });
+                    } else {
+                        return resolve(false)
+                    }
+                },
+                fail() {
+                    return resolve(false)
+                }
+            });
+        })
     }
 
-    static async autoLogin() {
+    // 微信授权后保存用户信息
+    static userSureAuth(params) {
+        this.G.userInfo = params.userInfo;
+        return this.post('member/completeFans', params)
+    }
+
+
+
+
+
+
+    static async autoLogin(byUnionId = false) {
         let self = this
         return new Promise(async(resolve, reject) => {
-            let result = await self.miniProgramLogin()
+            let result = await self.miniProgramLogin(byUnionId)
             if (!result) {
                 return resolve(false);
             }
