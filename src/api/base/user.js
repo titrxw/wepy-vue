@@ -116,7 +116,6 @@ export default class User extends base {
 
     static login(result) {
         this.token = result.token
-        this.lastTime = Date.parse(new Date()) / 1000;
     }
 
     static unLogin() {

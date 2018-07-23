@@ -4,6 +4,15 @@ import Tip from 'tip';
 import G from '@/conf';
 
 export default class page extends wepy.page {
+
+    addData(key, value) {
+        this.data[key] = value
+        Object.assign(this, {
+            [key]: value
+        })
+        this.setData(key, value)
+    }
+
     mounted(options) {
 
     }
@@ -11,8 +20,7 @@ export default class page extends wepy.page {
     async render(options) {
         await this.mounted(options)
 
-        this.setData('isMounted', true)
-        this.isMounted = true
+        this.addData('isMounted', true)
 
         this.$apply()
     }
@@ -43,10 +51,8 @@ export default class page extends wepy.page {
     }
 
     async onLoad(options) {
-        this.setData('G', G)
-        this.G = G
-        this.setData('isMounted', false)
-        this.isMounted = false
+        this.addData('G', G)
+        this.addData('isMounted', false)
 
 
         if (this.config) {

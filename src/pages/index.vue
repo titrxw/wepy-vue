@@ -83,6 +83,10 @@ export default class Index extends page {
     }
   }
 
+  mounted () {
+    console.log(this)
+  }
+
   mixins = [pagination];
 }
 </script>
