@@ -1,7 +1,7 @@
 <template>
     <view>
-      <!-- <authorization @success.user="" @error.user="" @getUserInfo.user=""></authorization> -->
-      <authorization ></authorization> 
+      <!-- <authorization @success.user="" @error.user="" @getUserInfo.user=""></authorization> 
+      <authorization ></authorization> -->
       <view class="icon">
         <view @tap="goPage('shopCart')" class="zan-icon zan-icon-cart mr20 font-ico"></view>
           <view @tap="goPage('orderList')" class="zan-icon zan-icon-pending-orders mr20 font-ico"></view>
@@ -47,7 +47,9 @@ import authorization from '@/components/authorization'
 import pagination from '@/mixin/pagination'
 export default class Index extends page {
   config = {
-    navigationBarTitleText: '商城'
+    navigationBarTitleText: '商城',
+    loginByAccount: true,
+    loginByUnionId: true
   };
   components = {
     authorization

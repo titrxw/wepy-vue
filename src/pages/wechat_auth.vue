@@ -1,5 +1,5 @@
 <template>
-<view wx-if='{{show}}' class="blackBg">
+<view  class="blackBg">
   <view class="box">
     <view class="font_30 marginT_38">登录并授权</view>
     <view class="marginT_40 color-136">申请获取以下权限</view>

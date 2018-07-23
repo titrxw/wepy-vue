@@ -29,11 +29,13 @@ export default class page extends wepy.page {
     async miniProgramLogin(byUnionId = false) {
         Tip.showLoading()
         let result = await user.miniProgramLogin(byUnionId)
-        if (!result && byUnionId) {
-            // 保存当前页面的地址
-            this.$redirect('/wechat_auth')
-            return false;
-        }
+            // if (!result && byUnionId) {
+            //     // 保存当前页面的地址
+            //     let pages = getCurrentPages()
+            //     let path = pages[pages.length - 1].route
+            //     this.$redirect('/pages/wechat_auth?redirect=' + path)
+            //     return false;
+            // }
         Tip.hideLoading()
         return result
     }
@@ -41,11 +43,13 @@ export default class page extends wepy.page {
     async autoLogin(byUnionId = false) {
         Tip.showLoading()
         let result = await user.autoLogin(byUnionId)
-        if (!result && byUnionId) {
-            // 保存当前页面的地址
-            this.$redirect('/wechat_auth')
-            return false;
-        }
+            // if (!result && byUnionId) {
+            //     // 保存当前页面的地址
+            //     let pages = getCurrentPages()
+            //     let path = pages[pages.length - 1].route
+            //     this.$redirect('/pages/wechat_auth?redirect=' + path)
+            //     return false;
+            // }
         Tip.hideLoading()
         return result
     }

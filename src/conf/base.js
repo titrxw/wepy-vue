@@ -3,11 +3,11 @@ export default {
     appId: '',
     imgHost: '',
     uploadHost: '',
-    apiHost: '',
+    apiHost: 'https://api.zh5j.com/mc/',
 
 
-    userInfo: {},
-    systemInfo: {},
+    userInfo: null,
+    systemInfo: null,
 
     uploadFileSize: 2048
 }

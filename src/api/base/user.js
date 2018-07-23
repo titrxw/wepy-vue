@@ -7,6 +7,7 @@ export default class User extends base {
     static openId = null;
     static token = null;
     static sessionKey = null
+    static hasUnionIdLogin = false
 
 
     static async miniProgramLogin(byUnionId = false) {
@@ -17,15 +18,17 @@ export default class User extends base {
             } else {
                 wx.login({
                     success: async function(res) {
+                        console.log(res)
                         if (res.code) {
                             let result = await self.post('common/miniProgramLogin', {
                                 code: res.code
                             })
                             if (result) {
+                                console.log(result)
                                 self.openId = result.openid;
                                 self.sessionKey = result.session_key
                                 if (byUnionId) {
-                                    result = await self.getWUserInfo()
+                                    result = await self.unionIdLogin()
                                     if (!result) {
                                         return resolve(false)
                                     }
@@ -43,25 +46,56 @@ export default class User extends base {
         })
     }
 
+    static async unionIdLogin() {
+        if (this.hasUnionIdLogin) {
+            return true
+        }
+        let result = await this.getWUserInfo()
+        if (result) {
+            result['openid'] = this.openId
+            result = await this.userSureAuth(result)
+            if (result) {
+                this.hasUnionIdLogin = true
+                return true
+            }
+            return false
+        }
+
+        return false
+    }
+
     static getWUserInfo() {
+        if (this.G.userInfo) {
+            return true
+        }
         let self = this
         return new Promise((resolve, reject) => {
-            wx.getSetting({
+            // wx.getSetting({
+            //     success: function(res) {
+            //         if (res.authSetting['scope.userInfo']) {
+            //             // 已经授权，可以直接调用 getUserInfo 获取头像昵称
+            //             wx.getUserInfo({
+            //                 success: function(res) {
+            //                     self.G.userInfo = res.userInfo
+            //                     return resolve(true)
+            //                 },
+            //                 fail() {
+            //                     return resolve(false)
+            //                 }
+            //             });
+            //         } else {
+            //             return resolve(false)
+            //         }
+            //     },
+            //     fail() {
+            //         return resolve(false)
+            //     }
+            // });
+
+            wx.getUserInfo({
                 success: function(res) {
-                    if (res.authSetting['scope.userInfo']) {
-                        // 已经授权，可以直接调用 getUserInfo 获取头像昵称
-                        wx.getUserInfo({
-                            success: function(res) {
-                                self.G.userInfo = res.getUserInfo
-                                return resolve(true)
-                            },
-                            fail() {
-                                return resolve(false)
-                            }
-                        });
-                    } else {
-                        return resolve(false)
-                    }
+                    self.G.userInfo = res.userInfo
+                    return resolve(res)
                 },
                 fail() {
                     return resolve(false)
