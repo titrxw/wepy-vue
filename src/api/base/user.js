@@ -7,7 +7,6 @@ export default class User extends base {
     static openId = null;
     static token = null;
     static sessionKey = null
-    static lastTime = null
 
 
     static async miniProgramLogin(byUnionId = false) {
@@ -90,7 +89,7 @@ export default class User extends base {
                 return resolve(false);
             }
 
-            if (self.getToken()) {
+            if (self.token) {
                 return resolve(true)
             }
             result = await self.post('common/login', {
@@ -122,15 +121,5 @@ export default class User extends base {
 
     static unLogin() {
         this.token = null
-    }
-
-    static getToken() {
-        let curTime = Date.parse(new Date()) / 1000;
-        if (this.lastTime && (curTime - this.lastTime) > (2 * 60 * 55)) {
-            this.unLogin()
-        } else {
-            this.lastTime = Date.parse(new Date()) / 1000;
-        }
-        return this.token
     }
 }

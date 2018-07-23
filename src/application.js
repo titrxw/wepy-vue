@@ -17,7 +17,7 @@ export default class app extends wepy.app {
                 if (!res.data) {
                     res.data = {}
                 }
-                res.data.token = user.getToken();
+                res.data.token = user.token;
                 res.data = qs.stringify(res.data);
 
                 if (!Validate.isUrl(res.url)) {
@@ -70,7 +70,7 @@ export default class app extends wepy.app {
                 if (!params.formData) {
                     params.formData = {};
                 }
-                params.formData['token'] = user.getToken();
+                params.formData['token'] = user.token;
                 return params;
             },
             success(res) {
