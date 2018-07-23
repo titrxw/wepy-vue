@@ -42,13 +42,13 @@ export default class app extends wepy.app {
                     case 401:
                         user.unLogin()
                         wx.redirectTo({
-                            url: '/login'
+                            url: '/pages/login'
                         });
                         return false;
                     case 302:
                         user.unLogin()
                         wx.redirectTo({
-                            url: '/login'
+                            url: '/pages/login'
                         });
                         return false;
                     default:
