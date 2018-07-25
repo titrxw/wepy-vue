@@ -33,6 +33,7 @@ export default class User extends base {
                                         return resolve(false)
                                     }
                                 }
+                                self.login(result)
                                 return resolve(true)
                             }
                         }
