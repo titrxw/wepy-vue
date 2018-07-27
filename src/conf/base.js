@@ -3,7 +3,7 @@ export default {
     appId: '',
     imgHost: '',
     uploadHost: '',
-    apiHost: 'https://api.zh5j.com/mc/',
+    apiHost: 'https://www.baidu.com/mc/',
 
 
     userInfo: null,

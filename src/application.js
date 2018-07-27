@@ -1,9 +1,9 @@
 import wepy from 'wepy';
 import 'wepy-async-function';
 import G from './conf';
-import user from './api/user';
 import qs from 'qs';
 import Tip from 'tip';
+import user from './api/user';
 import Validate from './libs/validate'
 
 export default class app extends wepy.app {

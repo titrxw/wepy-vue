@@ -22,7 +22,6 @@ export default class Layout extends wepy.component {
 }
 </script>
 <style lang="scss" scoped>
-@import '../zanui/common.scss';
 view {
   display: unset;
 }

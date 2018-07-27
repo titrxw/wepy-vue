@@ -127,7 +127,6 @@ export default class Upload extends wepy.component {
 }
 </script>
 <style scoped>
-@import '/zanui/icon';
 .upload {
   padding-left: 10px;
   padding-right: 10px;
