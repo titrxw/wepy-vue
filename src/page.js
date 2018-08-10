@@ -91,7 +91,7 @@ export default class page extends wepy.page {
                             Tip.errorToast(
                                 '文件太大, 不能超过 ' + G.uploadFileSize / 1024 + 'M.'
                             );
-                            return resolve(false)
+                            resolve(false)
                         }
 
                         Tip.showLoading();
@@ -101,13 +101,13 @@ export default class page extends wepy.page {
                                 filePath: element.path,
                                 success: function(res) {
                                     if (res) {
-                                        return cresolve(res)
+                                        cresolve(res)
                                     } else {
-                                        return cresolve(false)
+                                        cresolve(false)
                                     }
                                 },
                                 fail: function() {
-                                    return cresolve(false)
+                                    cresolve(false)
                                 },
                                 complete: function() {
                                     Tip.hideLoading();
@@ -117,7 +117,7 @@ export default class page extends wepy.page {
                         if (cresult) {
                             result.push(cresult)
                         } else {
-                            return resolve(false)
+                            resolve(false)
                         }
 
                         ++num;
@@ -125,12 +125,12 @@ export default class page extends wepy.page {
                             if (count == 1) {
                                 result = result[0]
                             }
-                            return resolve(result)
+                            resolve(result)
                         }
                     });
                 },
                 fail: function() {
-                    return resolve(false)
+                    resolve(false)
                 }
             });
         })
