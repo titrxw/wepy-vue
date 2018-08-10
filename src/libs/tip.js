@@ -1,6 +1,7 @@
+import wepy from 'wepy'
 export default {
   errorToast(msg) {
-    wx.showToast({
+    wepy.showToast({
       title: msg,
       icon: 'none',
       duration: 2000
@@ -8,7 +9,7 @@ export default {
   },
 
   successToast (msg) {
-    wx.showToast({
+    wepy.showToast({
       title: msg,
       icon: 'success',
       duration: 2000
@@ -16,7 +17,7 @@ export default {
   },
 
   toast (msg, icon = 'none', duration = 2000) {
-    wx.showToast({
+    wepy.showToast({
       title: msg,
       icon: icon,
       duration: duration
@@ -24,13 +25,13 @@ export default {
   },
 
   showLoading (title = '加载中') {
-    wx.showLoading({
+    wepy.showLoading({
       title: title,
     })
   },
 
   hideLoading () {
-    wx.hideLoading()
+    wepy.hideLoading()
   },
 
     /**
@@ -38,15 +39,15 @@ export default {
    */
   modal (text, title = '提示') {
     return new Promise((resolve, reject) => {
-      wx.showModal({
+      wepy.showModal({
         title: title,
         content: text,
         showCancel: false,
         success: res => {
-          resolve(res)
+          resolve(false)
         },
         fail: res => {
-          reject(res);
+          resolve(false)
         }
       })
     })
@@ -57,15 +58,19 @@ export default {
    */
   confirm (text, title = '提示') {
     return new Promise((resolve, reject) => {
-      wx.showModal({
+      wepy.showModal({
         title: title,
         content: text,
         showCancel: true,
         success: res => {
-          resolve(res)
+          if (!res.cancel) {
+            resolve(true)
+          } else {
+            resolve(false)
+          }
         },
         fail: res => {
-          reject(res);
+          resolve(false)
         }
       })
     })
