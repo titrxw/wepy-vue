@@ -116,8 +116,6 @@ export default class Login extends page {
 }
 </script>
 <style scoped>
-@import '/zanui/btn';
-@import '/zanui/cell';
 .title{
   margin-top: 190rpx;
   font-size: 65rpx;

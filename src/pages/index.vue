@@ -94,8 +94,6 @@ export default class Index extends page {
 </script>
 
 <style lang="scss"  scoped>
-@import '../zanui/icon.scss';
-@import '../zanui/panel.scss';
 button{
   margin: 0;
   padding: 0;
