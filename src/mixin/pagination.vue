@@ -65,13 +65,6 @@
     }
 
     /**
-     * 下拉刷新
-     */
-    async onPullDownRefresh () {
-      await this.reload();
-    }
-
-    /**
      * 更新列表（外部事件）
      */
     async update() {
