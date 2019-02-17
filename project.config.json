@@ -8,8 +8,8 @@
 		"newFeature": true
 	},
 	"compileType": "miniprogram",
-	"appid": "wxe0be55a8c3e0ac3b",
-	"projectname": "wepy",
+	"appid": "",
+	"projectname": "wepy-kc_alpha",
 	"miniprogramRoot": "./dist",
 	"libVersion": "1.9.91",
 	"condition": {}

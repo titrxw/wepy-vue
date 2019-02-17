@@ -1,0 +1,45 @@
+<template>
+  <view class="foot">
+    <view class="box" @tap="about">
+      <image src="../assets/images/logo.png"/>
+      <text>1120309488@qq.com</text>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+export default class Foot extends wepy.component {
+  methods = {
+    about () {
+      wx.navigateTo({
+        url: '/pages/about'
+      });
+    }
+  }
+}
+</script>
+<style lang="less">
+.foot {
+  width: 100%;
+  text-align: center;
+  padding-top:20px;
+  padding-bottom:20px;
+  background: transparent;
+  image {
+    width: 40rpx !important;
+    height: 40rpx !important;
+  }
+  .box {
+    width:300rpx;
+    margin:0 auto;
+    line-height: 40rpx;
+    text {
+      color: #888;
+      font-size: 26rpx;
+      margin-left: 10rpx;
+    }
+  }
+}
+</style>
+
+

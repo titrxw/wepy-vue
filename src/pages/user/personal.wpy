@@ -1,0 +1,110 @@
+<template>
+  <Layout :foot="foot">
+    <view class="header">
+      <view class="info">
+        <view class="info-img">
+          <image src="{{ info.head_img }}" class="img"/>
+        </view>
+        <view class="info-text">
+          <view>{{ info.real_name }}</view>
+          <view class="company">
+            <text>公司：</text><text style="flex:1;">{{ info.company_name }}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <van-cell-group>
+      <van-cell  title="功能反馈" @click="goPage('./feedback')" is-link/>
+      <van-cell title="关于我们" @click="goPage('/pages/about')" is-link/>
+      <van-cell border="{{false}}" title="设置" @click="goPage('../setting/index')" is-link/>
+    </van-cell-group>
+  </Layout>
+</template>
+
+<script>
+import wepy from 'wepy';
+import api from '@/api';
+import Layout from '@/components/layout';
+import Tip from '@/utils/tip'
+export default class personal extends wepy.page {
+  config = {
+    navigationBarTitleText: '个人中心',
+    navigationBarBackgroundColor: '#fff',
+    navigationBarTextStyle: 'black',
+    usingComponents: {
+      'van-cell': '/packages/cell/index',
+      "van-cell-group": "/packages/cell-group/index"
+    }
+  };
+  components = {
+    Layout
+  };
+  data = {
+    foot: true,
+    info: {
+      head_img: '',
+      real_name: '',
+      company_name: ''
+    }
+  };
+  methods = {
+    goPage(url) {
+      wx.navigateTo({
+        url: `./${url}`
+      });
+    }
+  };
+  async onShow() {
+    let result = await api.getWorkerInfo();
+    if (result) {
+      result.head_img = this.$parent.globalData.imgHost + result.head_img
+      this.info = result
+      this.$apply();
+    }
+  }
+}
+</script>
+<style lang="less">
+.header {
+  height: 250rpx;
+  font-size: 28rpx;
+  background: #fff;
+  border:1rpx solid transparent;
+  .info {
+    display: flex;
+    padding-left:50rpx;
+    margin-top:60rpx;
+    .info-text {
+      margin-left:30rpx;
+      margin-top:10rpx;
+      font-size:40rpx;
+      font-weight: 700;
+      margin-right:30rpx;
+      .company{
+        color:#777;
+        margin-top:25rpx;
+        font-size:30rpx;
+        height:50rpx;
+        line-height:50rpx;
+        display:flex;
+        font-weight: 500;
+        .icon{
+          margin-left:15rpx;
+          margin-top:-10rpx;
+        }
+      }
+    }
+    .info-img {
+      width: 130rpx;
+      height: 130rpx;
+      image {
+        border-radius: 10rpx;
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+}
+</style>
+

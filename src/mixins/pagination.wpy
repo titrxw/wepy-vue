@@ -1,0 +1,88 @@
+<script>
+  import wepy from 'wepy';
+  import Page from '@/utils/page'
+  /**
+   * 分页通用方法
+  */
+  export default class pagination extends wepy.mixin {
+    data = {
+      pageData: [],
+      _page: null,
+      isPageLoading: false,
+      isPageEmpty: false,
+      isPageReachBottom: false
+    };
+    /**
+     * 下一页
+     */
+    async next () {
+      try {
+        if (this._page.reachBottom) {
+          return;
+        }
+        this.isPageLoading = true;
+        const param = this.params ? this.params() : {};
+        let self = this
+        await this._page.next(param, function (params){ return self.getData(params)});
+        this.isPageReachBottom = this._page.reachBottom;
+        this.isPageEmpty = this._page.list.length == 0;
+        if (this.onPageLoad) {
+          this.onPageLoad();
+        }
+      } finally {
+        this.isPageLoading = false;
+        this.init = true;
+        this.pageData = this._page.list
+        this.$apply();
+      }
+    }
+
+    /**
+     * 到达底部
+     */
+    async onReachBottom () {
+      await this.next();
+    };
+
+    /**
+     * 重新加载
+     */
+    async reload () {
+      if (this._page ) {
+        if (this._page.reset) {
+          this._page.reset();
+        }
+        if (this.reset) {
+          this.reset();
+        }
+        await this.next();
+        wepy.stopPullDownRefresh();
+      }
+    }
+
+    /**
+     * 下拉刷新
+     */
+    // async onPullDownRefresh () {
+    //   await this.reload();
+    // }
+
+    /**
+     * 更新列表（外部事件）
+     */
+    async update() {
+      await this.reload();
+    };
+
+    onLoad () {
+      if (this.processFunc) {
+        let self = this
+        this._page = new Page(function (data) {
+          self.processFunc(data)
+        })
+      } else {
+        this._page = new Page()
+      }
+    }
+  }
+</script>

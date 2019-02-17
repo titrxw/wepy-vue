@@ -1,0 +1,178 @@
+<template>
+  <view class="upload">
+    <repeat for="{{tmpPics}}" key="index" index="index" item="item">
+      <image
+        @tap="tapImg({{index}})"
+        style="{{'width:' + width + 'px;height:' + width + 'px;'}}"
+        src="{{ item}}"
+      />
+    </repeat>
+    <view
+      wx:if="{{ !only_preview }}"
+      class="upload-btn"
+      @tap="upload"
+      style="{{'width:' + width + 'px;height:' + width + 'px;'}}"
+    >
+      <image class="ico" src="./photo.png"/>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import Tip from '@/utils/tip';
+export default class Upload extends wepy.component {
+  props = {
+    imgHost: {
+      type: String
+    },
+    pics: {
+      type: [Array, String],
+      twoWay: true
+    },
+    uploadHost: {
+      type: String
+    },
+    multiple: {
+      type: Boolean,
+      default: true
+    },
+    count: {
+      type: Number,
+      default: 9
+    },
+    sourceType: {
+      type: Array,
+      default: ['album ', 'camera']
+    },
+    fileSize: {
+      type: Number,
+      default: 2048
+    },
+    lineItems: {
+      type: Number,
+      default: 4
+    },
+    only_preview: {
+      type: Boolean,
+      default: false
+    }
+  };
+  data = {
+    width: 0,
+    tmpPics: [],
+  };
+  watch = {
+    pics(val) {
+      this.doInit(val)
+    }
+  };
+
+  doInit(val) {
+    if (!val) {
+      return false;
+    }
+    this.tmpPics = []
+    if (this.multiple) {
+      val.forEach((item, index) => {
+        this.tmpPics[index] = this.imgHost + val[index]
+      });
+    } else {
+      this.tmpPics = [this.imgHost + val];
+    }
+    this.$apply()
+  }
+  
+  methods = {
+    upload() {
+      let _self = this;
+      let count = 1
+      if (this.multiple) {
+        count = this.count - this.tmpPics.length
+      }
+      if (count == 0) {
+        Tip.errorToast('文件数量超过最大上限')
+        return false;
+      }
+      wx.chooseImage({
+        count: count,
+        sourceType: _self.sourceType,
+        success: function(res) {
+          res.tempFiles.forEach(element => {
+            if (_self.fileSize * 1024 < element.size) {
+              Tip.errorToast(
+                '文件太大, 不能超过 ' + _self.fileSize / 1024 + 'M.'
+              );
+              return false;
+            }
+            Tip.showLoading();
+            wepy.uploadFile({
+              url: _self.uploadHost,
+              filePath: element.path,
+              success: function(res) {
+                if (res) {
+                  if (!_self.multiple) {
+                    _self.pics = res;
+                  } else {
+                    _self.pics.push(res);
+                  }
+                  _self.$apply();
+                }
+              },
+              complete: function() {
+                Tip.hideLoading();
+              }
+            });
+          });
+        }
+      });
+    },
+    tapImg(index) {
+      if (this.only_preview) {
+        wx.previewImage({
+          current: this.tmpPics[index],
+          urls: this.tmpPics
+        })
+        return false
+      }
+      if (!this.multiple) {
+        this.pics = ''
+        return false;
+      }
+      this.pics.splice(index, 1);
+    }
+  };
+  onLoad = function(options) {
+    let self = this;
+    wx.getSystemInfo({
+      success: function(res) {
+        let rate = res.screenWidth / 375.0
+        self.width = (res.screenWidth - 30 * rate - self.lineItems * 15 * rate) / self.lineItems;
+        self.doInit(self.pics);
+        self.$apply();
+      }
+    });
+  };
+}
+</script>
+<style lang="less" scoped>
+.upload {
+  display: flex;
+  flex-wrap: wrap;
+  text-align: center;
+  image{
+    margin:15rpx;
+    margin-top: 0;
+  }
+  .upload-btn {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    border: 4rpx dashed #ccc;
+    .ico {
+      width: 60rpx;
+      height: 60rpx;
+    }
+  }
+}
+</style>
+

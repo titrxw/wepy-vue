@@ -1,0 +1,64 @@
+<template>
+  <Layout @tolower.user="tolower" :foot="foot">
+    <view slot="navbar">
+      
+    </view>
+    <repeat for="{{pageData}}" key="index" index="index" item="item">
+      <OrderItem :value="item"/>
+    </repeat>
+    <image wx:if="{{ pageData.length == 0 }}" mode="aspectFit" class="no-data" src="../assets/images/nodata.png" />
+  </Layout>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '@/api';
+import Layout from '@/components/layout';
+import pagination from '@/mixins/pagination';
+import OrderItem from './order/item';
+export default class Index extends wepy.page {
+  config = {
+    navigationBarTitleText: '首页',
+    navigationBarBackgroundColor: '#4A4B5D',
+    navigationBarTextStyle: 'white',
+    usingComponents: {
+      'van-tag': '/packages/tag/index'
+    }
+  };
+
+  components = {
+    Layout,
+    OrderItem
+  };
+
+  data = {
+    foot: true
+  };
+
+  methods = {
+    tolower() {
+      this.next();
+    }
+  };
+
+  onShow() {
+    this.$parent.login(async result => {
+      this.reload();
+    });
+  }
+
+  getData(params) {
+    return api.allotRecordList(params);
+  }
+
+  mixins = [pagination];
+}
+</script>
+<style lang="less">
+@import '../assets/style/theme.less';
+.no-data{
+  display:block;
+  margin:0 auto;
+  margin-top:94rpx;
+  width:600rpx;
+}
+</style>

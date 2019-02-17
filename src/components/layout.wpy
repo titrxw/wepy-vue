@@ -1,0 +1,74 @@
+<template>
+  <view class="wepy-flexview">
+    <slot name="navbar"></slot>
+    <!-- flex 布局在scroll view上加不上 -->
+    <scroll-view class="wepy-scrollview" scroll-y  bindscrolltolower="tolower" enable-back-to-top="{{ enableBackTop }}">
+      <view class="scroll-content">
+        <view class="slot {{ customClass }}">
+          <slot></slot>
+        </view>
+        <Foot wx:if="{{ foot }}"/>
+      </view>
+    </scroll-view>
+    <slot name="tabbar"></slot>
+  </view>
+</template>
+
+<script>
+import Foot from './foot'
+import wepy from 'wepy';
+export default class Layout extends wepy.component {
+  props = {
+    foot: {
+      type: Boolean,
+      default: false
+    },
+    customClass: {
+      type: String,
+      default: ''
+    }
+  }
+
+  components = {
+    Foot
+  }
+
+  data = {
+    enableBackTop: true
+  }
+
+  methods = {
+    tolower(e) {
+      this.$emit('tolower');
+    }
+  };
+}
+</script>
+<style lang="less">
+.wepy {
+  &-flexview {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+  }
+
+  &-scrollview {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+    .scroll-content{
+      display: flex;
+      flex-direction: column;
+      height:100%;
+      .slot{
+        flex:1;
+      }
+    }
+  }
+}
+</style>

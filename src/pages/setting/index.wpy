@@ -1,0 +1,53 @@
+<template>
+  <Layout>
+    <van-cell title="密码修改" is-link @tap="goPage('./password')"></van-cell>
+    <van-cell border="{{false}}" title="手机号码修改" @tap="goPage('./mobile')" is-link></van-cell>
+    
+    <view class="pd30" slot="tabbar">
+      <van-button size="large" @tap="loginOut">注销</van-button>
+    </view>
+  </Layout>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/api'
+import Layout from '@/components/layout'
+import Tip from '@/utils/tip'
+export default class Setting extends wepy.page{
+  config = {
+    navigationBarTitleText: '设置',
+    usingComponents: {
+      'van-cell': '/packages/cell/index',
+      'van-button': '/packages/button/index'
+    }
+  };
+
+  components = {
+    Layout
+  }
+
+  methods = {
+    goPage (path) {
+      // Tip.errorToast('暂不支持')
+      // return false
+      wx.navigateTo({
+        url: path
+      });
+    },
+    async loginOut () {
+      let msg = '退出登录后将解除平台账号和微信账号的关联，无法通过微信快捷登录平台。您可使用新微信号登录或使用本微信号重新登录。'
+      let result = await Tip.confirm(msg)
+      if (result) {
+        // 请求接口
+        result = await api.unbound()
+        if (result) {
+          await Tip.successToast('解绑成功')
+          wx.reLaunch({
+            url: '/pages/login'
+          })
+        }
+      }
+    }
+  }
+}
+</script>

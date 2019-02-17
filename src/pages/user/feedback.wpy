@@ -1,0 +1,105 @@
+<template>
+  <view class="container">
+    <van-panel>
+      <van-cell border="{{false}}" title="反馈类型" is-link>
+        <picker @change="pickChange" range-key="type" value="{{type}}" range="{{types}}">
+          <view class="picker">{{types[type].type}}</view>
+        </picker>
+      </van-cell>
+    </van-panel>
+    <van-panel  title="问题描述">
+      <textarea class="pd30 background-fff" bindinput="remarkChange"  placeholder="请输入问题描述以便我们提供更好的帮助" />
+    </van-panel>
+    
+    <van-panel  title="相关截图">
+      <view class="pd30">
+        <Upload
+          :imgHost.sync="imgHost"
+          :uploadHost.sync="uploadHost"
+          :pics.sync="pics"
+        />
+      </view>
+    </van-panel>
+
+    <view class="pd20 mt20">
+      <van-button  size="large" type="primary" @click="submit">提交</van-button>
+    </view>
+    
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import Upload from '@/components/upload/index'
+import Tip from '@/utils/tip'
+import api from '@/api'
+export default class FeedBack extends wepy.page {
+  config = {
+    navigationBarTitleText: '功能反馈',
+    usingComponents: {
+      'van-cell': '/packages/cell/index',
+      "van-panel": "/packages/panel/index",
+      "van-button": "/packages/button/index"
+    }
+  };
+
+  components = {
+    Upload
+  }
+
+  data = {
+    imgHost: '',
+    uploadHost: '',
+    types: [],
+    type: 0,
+    pics: [],
+    form: {
+      type: 0,
+      remark: '',
+      pics: []
+    }
+  };
+
+  methods = {
+    pickChange(e) {
+      this.type = e.detail.value;
+      this.form.type = this.types[this.type].id
+    },
+    remarkChange (e) {
+      this.form.remark = e.detail.value
+    },
+    async submit () {
+      let msg = ''
+      if (this.form.type == 0) {
+        msg = '请选择反馈类型'
+      } else if (this.form.remark == '') {
+        msg = '请输入反馈内容'
+      }
+      if (msg) {
+        Tip.errorToast(msg)
+        return false;
+      }
+
+      this.form.pics = this.pics
+      let result = await api.feedBack(this.form)
+      if (result) {
+        await Tip.errorToast('感谢您的反馈\r\n我们会尽快处理您的问题\r\n为您带来更好的体验。')
+        wx.navigateBack({
+          delta: 1
+        })
+      }
+    }
+  };
+
+  async onLoad () {
+    this.imgHost = this.$parent.globalData.imgHost
+    this.uploadHost = this.$parent.globalData.uploadHost
+    let result = await api.feedBackTypes()
+    if (result) {
+      this.types = result
+      this.form.type = this.types[this.type].id
+      this.$apply()
+    }
+  }
+}
+</script>
+

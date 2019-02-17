@@ -1,0 +1,103 @@
+<template>
+  <view class="login">
+      <van-cell border="{{ false }}">
+        <text slot="title" class="title">登录</text>
+      </van-cell>
+      <van-field
+        type="number"
+        placeholder="请输入手机号码"
+        bindchange="bindMobileInput"
+      >
+      </van-field>
+      <van-field
+        type="password"
+        placeholder="请输入密码"
+        bindchange="bindPasswordInput"
+      >
+      </van-field>
+      <view class="pd30 ">
+        <van-button custom-class="loginBtn" size="large"  @tap="submit">登录</van-button>
+      </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '@/api';
+import Tip from '@/utils/tip';
+export default class Login extends wepy.page {
+  config = {
+    navigationBarTitleText: '登录',
+    usingComponents: {
+      'van-cell': '/packages/cell/index',
+      'van-button': '/packages/button/index',
+      "van-field": "/packages/field/index"
+    }
+  };
+  data = {
+    hasSend: false,
+    sendMsgBtnText: '获取验证码',
+    form: {
+      mobile: '',
+      unionid: ''
+    }
+  };
+  onLoad () {
+    this.form.unionid = this.$parent.globalData.unionId
+  }
+  methods = {
+    bindMobileInput(e) {
+      this.form.mobile = e.detail;
+    },
+    bindPasswordInput (e) {
+      this.form.password = e.detail;
+    },
+    async submit() {
+      let msg = '';
+      if (!this.form.mobile) {
+        msg = '请输入账号';
+      } else if (!this.form.password) {
+        msg = '请输入密码';
+      }
+      if (msg) {
+        Tip.errorToast(msg);
+        return false;
+      }
+
+      let result = await api.register(this.form);
+      if (result && result.token) {
+        this.$parent.globalData.token = result.token
+        wx.setStorage({
+          key: 'token',
+          data: JSON.stringify({
+            time: (new Date()).valueOf(),
+            token: result.token
+          })
+        })
+        this.$parent.globalData.id = result.id
+        wx.reLaunch({
+          url: 'index'
+        })
+      }
+    }
+  };
+}
+</script>
+<style lang="less">
+.login{
+  border:none;
+  background:#fff;
+  overflow-x:hidden;
+  height:100%;
+  .title {
+    display:block;
+    margin-top:150rpx;
+    font-size:65rpx;
+    margin-bottom:75rpx;
+  }
+  .loginBtn {
+    background: #444444 !important;
+    color: #fff !important;
+  }
+}
+
+</style>

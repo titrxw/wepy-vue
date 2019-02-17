@@ -1,0 +1,57 @@
+<template>
+  <view class="about">
+    <image src="../assets/images/logo.png"/>
+    <view class="name">1120309488@qq.com</view>
+    <view class="version">Version <text>{{ version }}</text></view>
+    <van-button custom-class="call" type="primary" @click="call">联系我们</van-button>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import api from '@/api'
+export default class About extends wepy.page{
+  config = {
+    navigationBarTitleText: '关于我们',
+    usingComponents: {
+      "van-button": "/packages/button/index"
+    }
+  };
+
+  data = {
+    version: '1.0.0',
+    mobile: '15903466276'
+  }
+
+  methods = {
+    call () {
+      wx.makePhoneCall({
+        phoneNumber: this.mobile
+      })
+    }
+  }
+}
+</script>
+<style lang="less">
+.about{
+  background:#fff;
+  height: 100%;
+  text-align: center;
+  image{
+    width:150rpx;
+    height:150rpx;
+    margin-top:290rpx;
+  }
+  .name{
+    font-size:36rpx;
+    font-weight:600;
+    margin-top:50rpx;
+  }
+  .version{
+    font-size:34rpx;
+    margin-top:15rpx;
+  }
+  .call{
+    margin-top:80rpx;
+  }
+}
+</style>

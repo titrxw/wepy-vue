@@ -1,0 +1,378 @@
+<style lang="less" src="./assets/style/common.less"></style>
+
+<script>
+import wepy from 'wepy';
+import 'wepy-async-function';
+import tip from '@/utils/tip';
+export default class extends wepy.app {
+  // 这里只能是静态数据
+  config = {
+    pages: [
+      'pages/index',
+      'pages/login',
+      'pages/user/personal',
+      'pages/user/feedback',
+      'pages/auth',
+      'pages/about'
+    ],
+    window: {
+      backgroundTextStyle: 'light',
+      navigationBarBackgroundColor: '#fff',
+      navigationBarTitleText: '平台',
+      navigationBarTextStyle: 'black'
+    },
+    tabBar: {
+      selectedColor: '#4A4B5D',
+      list: []
+    },
+    permission: {
+      'scope.userLocation': {
+        desc: '你的位置信息将用于记录您的位置！'
+      }
+    },
+    debug: true
+  };
+  globalData = {
+    id: '',
+    userInfo: null,
+    systemInfo: null,
+    openId: null,
+    unionId: null,
+    loginType: 2, //1：openid + bind;  2：unionId + bind; 3:openid; 4:unionid
+    token: '',
+    imgHost: '',
+    uploadFileSize: 2048,
+    // uploadHost: '',
+    uploadHost: ''
+  };
+  constructor() {
+    super();
+    this.use('requestfix');
+    let self = this;
+    this.intercept('request', {
+      config(p) {
+        if (!p.method) p.method = 'POST';
+        if (!/(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g.test(p.url)) {
+          p.url = 'https://api/' + p.url;
+        }
+
+        if (!p.data) {
+          p.data = {};
+        }
+        p.data.token = self.globalData.token;
+        return p;
+      },
+      success(p) {
+        if (typeof p.data == 'string') {
+          // 这里暂时有问题
+          tip.errorToast('数据格式错误' + p.data);
+          return false;
+        }
+        switch (p.data.ret) {
+          case 200:
+            return p.data.data;
+          case 300:
+          case 302:
+            wx.removeStorage({
+              key: 'token'
+            })
+            self.globalData.token = null;
+            wepy.switchTab({
+              url: '/pages/index'
+            });
+            return false;
+          default:
+            if (p.data.ret) {
+              tip.errorToast(p.data.msg);
+              return false;
+            }
+            return p.data;
+        }
+      },
+      fail(p) {
+        tip.errorToast('网络错误');
+        return p;
+      }
+    });
+    this.intercept('uploadFile', {
+      config(params) {
+        params.name = 'file';
+        if (!params.formData) {
+          params.formData = {};
+        }
+        params.formData.token = self.globalData.token;
+        return params;
+      },
+      success(res) {
+        try {
+          res.data = JSON.parse(res.data);
+        } catch (e) {
+          tip.errorToast('数据格式错误' + res.data);
+          return false;
+        }
+        if (res.data.ret == 200 && res.data.data.url) {
+          return res.data.data.url;
+        } else {
+          tip.errorToast('上传失败' + res.data.msg);
+          return false;
+        }
+      },
+      fail(res) {
+        tip.errorToast('网络错误');
+        return false;
+      }
+    });
+    wx.getSystemInfo({
+      success: function(res) {
+        self.globalData.systemInfo = res;
+      }
+    });
+  }
+
+  login(cb) {
+    if (!this.globalData.token) {
+      try {
+        let info = wx.getStorageSync('token');
+        if (info) {
+          info = JSON.parse(info)
+          let ctime = (new Date()).valueOf();
+          if (ctime - info.time > 2 * 58 * 60 * 1000) {
+            wx.removeStorage({
+              key: 'token'
+            })
+            this.globalData.token = null
+          } else {
+            this.globalData.token = info.token;
+          }
+        }
+      } catch (e) {
+        this.globalData.token = null;
+      }
+    }
+    if (this.globalData.token) {
+      cb && cb(this.globalData);
+      return true;
+    }
+    tip.showLoading();
+    let self = this;
+    wepy.login({
+      success: function(res) {
+        if (res.code) {
+          wepy.request({
+            url: 'worker_common/miniProgramLogin',
+            data: {
+              type: self.globalData.loginType,
+              code: res.code
+            },
+            success:async  function(res) {
+              if (res) {
+                self.globalData.uid = res.uid;
+                self.globalData.openId = res.openid;
+                self.globalData.token = res.token;
+                
+                let isAuth = false
+                if (!res.token) {
+                  //1：openid + bind;  2：unionId + bind; 3:openid; 4:unionid
+                  switch (self.globalData.loginType) {
+                    case 1:
+                      wx.reLaunch({ url: '/pages/login' });
+                      break;
+                    case 2:
+                      isAuth = await self.isAuth()
+                      if (isAuth) {
+                         self.globalData.unionId = res.unionid;
+                          wx.reLaunch({ url: '/pages/login' });
+                          return true;
+                      }
+                      wx.reLaunch({ url: '/pages/auth' });
+                      break;
+                    case 3:
+                      cb && cb(self.globalData);
+                      break;
+                    case 4:
+                      isAuth = await self.isAuth()
+                      if (!isAuth) {
+                        wx.reLaunch({ url: '/pages/auth' });
+                      } else {
+                        cb && cb(self.globalData);
+                      }
+                      break;
+                  }
+                } else {
+                  wx.setStorage({
+                    key: 'token',
+                    data: JSON.stringify({
+                      time: (new Date()).valueOf(),
+                      token: res.token
+                    })
+                  })
+                  if (self.globalData.loginType == 2 || self.globalData.loginType == 4) {
+                    isAuth = await self.isAuth()
+                    if (!isAuth) {
+                      wx.reLaunch({ url: '/pages/auth' });
+                      return false;
+                    }
+                  }
+                  cb && cb(self.globalData);
+                }
+              }
+            },
+            complete() {
+              tip.hideLoading();
+            }
+          });
+        } else {
+          tip.errorToast('登录失败！' + res.errMsg);
+        }
+      },
+      complete() {
+        tip.hideLoading();
+      }
+    });
+  }
+
+  isAuth() {
+    // 如果删除打开的小程序后需要重新授权
+    return new Promise((resolve,reject) => {
+      wx.getSetting({
+        success(res) {
+          resolve(res.authSetting['scope.userInfo'])
+        },
+        fail() {
+          resolve(false)
+        }
+      });
+    })
+  }
+
+  getUserInfo(cb) {
+    const self = this;
+    if (this.globalData.userInfo) {
+      return this.globalData.userInfo;
+    }
+    wepy.getUserInfo({
+      success(res) {
+        self.globalData.userInfo = res.userInfo;
+        cb && cb(res.userInfo);
+      }
+    });
+  }
+
+  async uploadFile(count = 9, sourceType = null) {
+    let self = this;
+    return new Promise((resolve, reject) => {
+      wepy.chooseImage({
+        count: count,
+        sourceType: sourceType,
+        success: function(res) {
+          var num = 0;
+          var result = [];
+          res.tempFiles.forEach(async element => {
+            if (self.globalData.uploadFileSize * 1024 < element.size) {
+              tip.errorToast(
+                '文件太大, 不能超过 ' +
+                  self.globalData.uploadFileSize / 1024 +
+                  'M.'
+              );
+              return resolve(false);
+            }
+
+            tip.showLoading();
+            let cresult = await new Promise((cresolve, creject) => {
+              wepy.uploadFile({
+                url: self.globalData.uploadHost,
+                filePath: element.path,
+                success: function(res) {
+                  if (res) {
+                    return cresolve(res);
+                  } else {
+                    return cresolve(false);
+                  }
+                },
+                fail: function() {
+                  return cresolve(false);
+                },
+                complete: function() {
+                  tip.hideLoading();
+                }
+              });
+            });
+            if (cresult) {
+              result.push(cresult);
+            } else {
+              return resolve(false);
+            }
+
+            ++num;
+            if (num == res.tempFiles.length) {
+              if (count == 1) {
+                result = result[0];
+              }
+              return resolve(result);
+            }
+          });
+        },
+        fail: function() {
+          return resolve(false);
+        }
+      });
+    });
+  }
+
+  async getLocation() {
+    return new Promise(function(resolve, reject) {
+      wx.getLocation({
+        type: 'gcj02',
+        async success(res) {
+          let curPoint = {
+            lat: res.latitude,
+            lng: res.longitude
+          };
+          resolve(curPoint);
+        },
+        fail(res) {
+          wepy.showModal({
+            title: '提示',
+            content: '需要获取您的地理位置，请确认授权!',
+            showCancel: true,
+            success: res => {
+              if (!res.cancel) {
+                wx.openSetting({
+                  success: function(res) {
+                    if (res.authSetting['scope.userLocation']) {
+                      // 重新获取位置
+                      wx.getLocation({
+                        type: 'gcj02',
+                        async success(res) {
+                          let curPoint = {
+                            lat: res.latitude,
+                            lng: res.longitude
+                          };
+                          resolve(curPoint);
+                        },
+                        fail(res) {
+                          resolve(false);
+                        }
+                      });
+                    } else {
+                      resolve(false);
+                    }
+                  },
+                  fail: function() {
+                    resolve(false);
+                  }
+                });
+              } else {
+                resolve(false);
+              }
+            },
+            fail: res => {
+              resolve(false);
+            }
+          });
+        }
+      });
+    });
+  }
+}
+</script>

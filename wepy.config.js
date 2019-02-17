@@ -1,21 +1,18 @@
 const path = require('path');
-var prod = process.env.NODE_ENV === 'dev';
+var prod = process.env.NODE_ENV === 'build';
 
 module.exports = {
-  wpyExt: '.vue',
+  wpyExt: '.wpy',
   eslint: false,
   cliLogs: !prod,
   resolve: {
     alias: {
-      '@': path.join(__dirname, 'src'),
-      page: path.join(__dirname, 'src/page.js'),
-      app: path.join(__dirname, 'src/application.js'),
-      'tip': path.join(__dirname, 'src/libs/tip.js')
+      '@': path.join(__dirname, 'src')
     }
   },
   compilers: {
-    sass: {
-      outputStyle: 'compressed'
+    less: {
+      compress: prod
     },
     babel: {
       sourceMap: true,
@@ -40,9 +37,6 @@ module.exports = {
 }
 
 if (prod) {
-
-  // 压缩sass
-  // module.exports.compilers['sass'] = {outputStyle: 'compressed'}
 
   // 压缩js
   module.exports.plugins = {
