@@ -33,16 +33,14 @@ export default class extends wepy.app {
     debug: true
   };
   globalData = {
-    id: '',
     userInfo: null,
     systemInfo: null,
     openId: null,
     unionId: null,
-    loginType: 2, //1：openid + bind;  2：unionId + bind; 3:openid; 4:unionid
     token: '',
+    apiHost: '',
     imgHost: '',
     uploadFileSize: 2048,
-    // uploadHost: '',
     uploadHost: ''
   };
   constructor() {
@@ -53,7 +51,7 @@ export default class extends wepy.app {
       config(p) {
         if (!p.method) p.method = 'POST';
         if (!/(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g.test(p.url)) {
-          p.url = 'https://api/' + p.url;
+          p.url = self.globalData.apiHost + p.url;
         }
 
         if (!p.data) {
@@ -72,7 +70,6 @@ export default class extends wepy.app {
           case 200:
             return p.data.data;
           case 300:
-          case 302:
             wx.removeStorage({
               key: 'token'
             })
@@ -81,6 +78,10 @@ export default class extends wepy.app {
               url: '/pages/index'
             });
             return false;
+          case 302:
+            wepy.reLaunch({
+              url: '/pages/bind'
+            });
           default:
             if (p.data.ret) {
               tip.errorToast(p.data.msg);
@@ -94,6 +95,7 @@ export default class extends wepy.app {
         return p;
       }
     });
+
     this.intercept('uploadFile', {
       config(params) {
         params.name = 'file';
@@ -129,7 +131,7 @@ export default class extends wepy.app {
     });
   }
 
-  login(cb) {
+  async login(cb) {
     if (!this.globalData.token) {
       try {
         let info = wx.getStorageSync('token');
@@ -153,68 +155,63 @@ export default class extends wepy.app {
       cb && cb(this.globalData);
       return true;
     }
+
+    let isAuth = await new Promise((resolve,reject) => {
+      wx.getSetting({
+        success(res) {
+          resolve(res.authSetting['scope.userInfo'])
+        },
+        fail() {
+          resolve(false)
+        }
+      });
+    })
+    if (!isAuth) {
+      wepy.reLaunch({
+        url: '/pages/auth'
+      });
+      return false;
+    }
+
+    let info = await this.getUserInfo();
+    if (!info) {
+      tip.errorToast('获取用户微信信息失败!')
+      return false;
+    }
+
     tip.showLoading();
     let self = this;
     wepy.login({
       success: function(res) {
         if (res.code) {
           wepy.request({
-            url: 'worker_common/miniProgramLogin',
+            url: 'common/miniProgramLogin',
             data: {
-              type: self.globalData.loginType,
-              code: res.code
+              code: res.code,
+              encrypted_data: info.encryptedData,
+              iv: info.iv
             },
-            success:async  function(res) {
+            success:function(res) {
               if (res) {
                 self.globalData.uid = res.uid;
-                self.globalData.openId = res.openid;
                 self.globalData.token = res.token;
                 
-                let isAuth = false
-                if (!res.token) {
-                  //1：openid + bind;  2：unionId + bind; 3:openid; 4:unionid
-                  switch (self.globalData.loginType) {
-                    case 1:
-                      wx.reLaunch({ url: '/pages/login' });
-                      break;
-                    case 2:
-                      isAuth = await self.isAuth()
-                      if (isAuth) {
-                         self.globalData.unionId = res.unionid;
-                          wx.reLaunch({ url: '/pages/login' });
-                          return true;
-                      }
-                      wx.reLaunch({ url: '/pages/auth' });
-                      break;
-                    case 3:
-                      cb && cb(self.globalData);
-                      break;
-                    case 4:
-                      isAuth = await self.isAuth()
-                      if (!isAuth) {
-                        wx.reLaunch({ url: '/pages/auth' });
-                      } else {
-                        cb && cb(self.globalData);
-                      }
-                      break;
-                  }
-                } else {
-                  wx.setStorage({
-                    key: 'token',
-                    data: JSON.stringify({
-                      time: (new Date()).valueOf(),
-                      token: res.token
-                    })
+                wx.setStorage({
+                  key: 'token',
+                  data: JSON.stringify({
+                    time: (new Date()).valueOf(),
+                    token: res.token
                   })
-                  if (self.globalData.loginType == 2 || self.globalData.loginType == 4) {
-                    isAuth = await self.isAuth()
-                    if (!isAuth) {
-                      wx.reLaunch({ url: '/pages/auth' });
-                      return false;
-                    }
-                  }
-                  cb && cb(self.globalData);
+                })
+
+                if (res.uid == 0) {
+                  wepy.reLaunch({
+                    url: '/pages/bind'
+                  });
+                  return false;
                 }
+
+                cb && cb(self.globalData);
               }
             },
             complete() {
@@ -231,31 +228,24 @@ export default class extends wepy.app {
     });
   }
 
-  isAuth() {
-    // 如果删除打开的小程序后需要重新授权
-    return new Promise((resolve,reject) => {
-      wx.getSetting({
+
+  getUserInfo() {
+    if (this.globalData.userInfo) {
+      return this.globalData.userInfo;
+    }
+
+    const self = this;
+    return new Promise((resolve, reject) => {
+      wepy.getUserInfo({
         success(res) {
-          resolve(res.authSetting['scope.userInfo'])
+          self.globalData.userInfo = res.userInfo;
+          resolve(res)
         },
-        fail() {
+        fail () {
           resolve(false)
         }
       });
     })
-  }
-
-  getUserInfo(cb) {
-    const self = this;
-    if (this.globalData.userInfo) {
-      return this.globalData.userInfo;
-    }
-    wepy.getUserInfo({
-      success(res) {
-        self.globalData.userInfo = res.userInfo;
-        cb && cb(res.userInfo);
-      }
-    });
   }
 
   async uploadFile(count = 9, sourceType = null) {
@@ -274,7 +264,7 @@ export default class extends wepy.app {
                   self.globalData.uploadFileSize / 1024 +
                   'M.'
               );
-              return resolve(false);
+              resolve(false);
             }
 
             tip.showLoading();
@@ -284,13 +274,13 @@ export default class extends wepy.app {
                 filePath: element.path,
                 success: function(res) {
                   if (res) {
-                    return cresolve(res);
+                    cresolve(res);
                   } else {
-                    return cresolve(false);
+                    cresolve(false);
                   }
                 },
                 fail: function() {
-                  return cresolve(false);
+                  cresolve(false);
                 },
                 complete: function() {
                   tip.hideLoading();
@@ -300,7 +290,7 @@ export default class extends wepy.app {
             if (cresult) {
               result.push(cresult);
             } else {
-              return resolve(false);
+              resolve(false);
             }
 
             ++num;
@@ -308,12 +298,12 @@ export default class extends wepy.app {
               if (count == 1) {
                 result = result[0];
               }
-              return resolve(result);
+              resolve(result);
             }
           });
         },
         fail: function() {
-          return resolve(false);
+          resolve(false);
         }
       });
     });

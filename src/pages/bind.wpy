@@ -64,18 +64,9 @@ export default class Login extends wepy.page {
       }
 
       let result = await api.register(this.form);
-      if (result && result.token) {
-        this.$parent.globalData.token = result.token
-        wx.setStorage({
-          key: 'token',
-          data: JSON.stringify({
-            time: (new Date()).valueOf(),
-            token: result.token
-          })
-        })
-        this.$parent.globalData.id = result.id
+      if (result) {
         wx.reLaunch({
-          url: 'index'
+          url: '/pages/index'
         })
       }
     }

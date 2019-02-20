@@ -9,48 +9,72 @@
   </view>
 </template>
 <script>
-import wepy from 'wepy'
+import wepy from 'wepy';
 import api from '@/api';
-export default class Auth extends wepy.page{
+import Tip from '@/utils/tip';
+export default class Auth extends wepy.page {
   config = {
     navigationBarTitleText: '授权'
   };
 
-  methods = { 
-    async onGotUserInfo (e) {
-      if (this.$parent.globalData.token) {
-        // 更新用户信息
-        // e.detail.userInfo
-        wx.reLaunch({
-          url: './index'
-        });
-        return true;
+  methods = {
+    async onGotUserInfo(e) {
+      if (e.errMsg == '') {
+        Tip.errorToast('获取用户微信信息失败');
+        return false;
       }
-      let result = await api.unionLogin({
-        openid: this.$parent.globalData.openId,
-        encrypted_data: e.detail.encryptedData,
-        iv: e.detail.iv
-      })
-      if (result) {
-        this.$parent.globalData.unionId = result.unionid
-        if (this.$parent.globalData.loginType == 4) {
-          this.$parent.globalData.token = result.token
-          wx.setStorage({
-            key: 'token',
-            data: JSON.stringify({
-              time: (new Date()).valueOf(),
-              token: res.token
-            })
-          })
-          wx.reLaunch({
-            url: './index'
-          })
-          return true;
+
+      tip.showLoading();
+      let self = this;
+      wepy.login({
+        success: function(res) {
+          if (res.code) {
+            wepy.request({
+              url: 'common/miniProgramLogin',
+              data: {
+                code: res.code,
+                encrypted_data: e.detail.encryptedData,
+                iv: e.detail.iv
+              },
+              success: function(res) {
+                if (res) {
+                  self.globalData.uid = res.uid;
+                  self.globalData.token = res.token;
+
+                  wx.setStorage({
+                    key: 'token',
+                    data: JSON.stringify({
+                      time: new Date().valueOf(),
+                      token: res.token
+                    })
+                  });
+
+                  if (res.uid == 0) {
+                    wepy.reLaunch({
+                      url: '/pages/bind'
+                    });
+                    return false;
+                  }
+
+                  wepy.reLaunch({
+                    url: '/pages/index'
+                  });
+                }
+              },
+              complete() {
+                tip.hideLoading();
+              }
+            });
+          } else {
+            tip.errorToast('登录失败！' + res.errMsg);
+          }
+        },
+        complete() {
+          tip.hideLoading();
         }
-        wx.redirectTo({url: './login'})
-      }
+      });
     }
-  }
+  };
 }
 </script>
 <style lang="less">
