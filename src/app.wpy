@@ -173,44 +173,39 @@ export default class extends wepy.app {
       return false;
     }
 
-    let info = await this.getUserInfo();
-    if (!info) {
-      tip.errorToast('获取用户微信信息失败!')
-      return false;
-    }
-
+    let self = this
     tip.showLoading();
-    let self = this;
     wepy.login({
-      success: function(res) {
+      success:async function(res) {
         if (res.code) {
+          let info = await self.getUserInfo()
+          if (!info) {
+            tip.errorToast('获取微信用户信息错误');
+            return false;
+          }
           wepy.request({
-            url: 'common/miniProgramLogin',
+            url: 'worker_common/miniProgramLogin',
             data: {
               code: res.code,
               encrypted_data: info.encryptedData,
               iv: info.iv
             },
-            success:function(res) {
+            success: function(res) {
               if (res) {
-                self.globalData.uid = res.uid;
                 self.globalData.token = res.token;
-                
                 wx.setStorage({
                   key: 'token',
-                  data: JSON.stringify({
+                  data: {
                     time: (new Date()).valueOf(),
                     token: res.token
-                  })
+                  }
                 })
 
+                // 绑定
                 if (res.uid == 0) {
-                  wepy.reLaunch({
-                    url: '/pages/bind'
-                  });
+                  wx.reLaunch({ url: '/pages/bind' });
                   return false;
                 }
-
                 cb && cb(self.globalData);
               }
             },
@@ -219,10 +214,10 @@ export default class extends wepy.app {
             }
           });
         } else {
-          tip.errorToast('登录失败！' + res.errMsg);
+          tip.errorToast('登录失败，' + res.errMsg);
         }
       },
-      complete() {
+      fail() {
         tip.hideLoading();
       }
     });
@@ -311,9 +306,11 @@ export default class extends wepy.app {
 
   async getLocation() {
     return new Promise(function(resolve, reject) {
+      tip.showLoading();
       wx.getLocation({
         type: 'gcj02',
         async success(res) {
+          tip.hideLoading()
           let curPoint = {
             lat: res.latitude,
             lng: res.longitude
@@ -342,21 +339,28 @@ export default class extends wepy.app {
                         },
                         fail(res) {
                           resolve(false);
+                        },
+                        complete () {
+                          tip.hideLoading()
                         }
                       });
                     } else {
+                      tip.hideLoading()
                       resolve(false);
                     }
                   },
                   fail: function() {
+                    tip.hideLoading()
                     resolve(false);
                   }
                 });
               } else {
+                tip.hideLoading()
                 resolve(false);
               }
             },
             fail: res => {
+              tip.hideLoading()
               resolve(false);
             }
           });

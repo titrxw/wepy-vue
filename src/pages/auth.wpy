@@ -1,36 +1,34 @@
 <template>
   <view class="authorize">
-    <image class="authorize-icon" src="../assets/images/authorize.png"></image>
+    <image class="authorize-icon" src="../assets/images/authorize.png"/>
     <view class="auth-item">申请获取以下权限：</view>
     <view class="auth-item">获取你的公开信息（头像、昵称等）</view>
     <view class="btn-authorize">
-      <button open-type="getUserInfo" type="primary" lang="zh_CN" bindgetuserinfo="onGotUserInfo">授权</button>
+      <button open-type="getUserInfo" type="primary" lang="zh_CN" bindgetuserinfo="onGetUserInfo">授权</button>
     </view>
   </view>
 </template>
 <script>
 import wepy from 'wepy';
 import api from '@/api';
-import Tip from '@/utils/tip';
+import tip from '@/utils/tip';
 export default class Auth extends wepy.page {
   config = {
-    navigationBarTitleText: '授权'
+    navigationBarTitleText: '家政平台-授权'
   };
 
   methods = {
-    async onGotUserInfo(e) {
-      if (e.errMsg == '') {
-        Tip.errorToast('获取用户微信信息失败');
+    async onGetUserInfo(e) {
+      if (e.detail.errMsg == 'getUserInfo:fail auth deny') {
         return false;
       }
-
-      tip.showLoading();
       let self = this;
+      tip.showLoading();
       wepy.login({
-        success: function(res) {
+        success: async function(res) {
           if (res.code) {
             wepy.request({
-              url: 'common/miniProgramLogin',
+              url: 'worker_common/miniProgramLogin',
               data: {
                 code: res.code,
                 encrypted_data: e.detail.encryptedData,
@@ -38,25 +36,21 @@ export default class Auth extends wepy.page {
               },
               success: function(res) {
                 if (res) {
-                  self.globalData.uid = res.uid;
-                  self.globalData.token = res.token;
-
+                  self.$parent.globalData.token = res.token;
                   wx.setStorage({
                     key: 'token',
-                    data: JSON.stringify({
+                    data: {
                       time: new Date().valueOf(),
                       token: res.token
-                    })
+                    }
                   });
 
                   if (res.uid == 0) {
-                    wepy.reLaunch({
-                      url: '/pages/bind'
-                    });
+                    wx.reLaunch({ url: '/pages/bind' });
                     return false;
                   }
 
-                  wepy.reLaunch({
+                  wx.reLaunch({
                     url: '/pages/index'
                   });
                 }
@@ -66,10 +60,10 @@ export default class Auth extends wepy.page {
               }
             });
           } else {
-            tip.errorToast('登录失败！' + res.errMsg);
+            tip.errorToast('登录失败,' + res.errMsg);
           }
         },
-        complete() {
+        fail() {
           tip.hideLoading();
         }
       });
