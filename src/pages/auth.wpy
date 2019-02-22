@@ -14,59 +14,20 @@ import api from '@/api';
 import tip from '@/utils/tip';
 export default class Auth extends wepy.page {
   config = {
-    navigationBarTitleText: '家政平台-授权'
+    navigationBarTitleText: '授权'
   };
 
   methods = {
-    async onGetUserInfo(e) {
+    onGetUserInfo(e) {
       if (e.detail.errMsg == 'getUserInfo:fail auth deny') {
         return false;
       }
-      let self = this;
-      tip.showLoading();
-      wepy.login({
-        success: async function(res) {
-          if (res.code) {
-            wepy.request({
-              url: 'worker_common/miniProgramLogin',
-              data: {
-                code: res.code,
-                encrypted_data: e.detail.encryptedData,
-                iv: e.detail.iv
-              },
-              success: function(res) {
-                if (res) {
-                  self.$parent.globalData.token = res.token;
-                  wx.setStorage({
-                    key: 'token',
-                    data: {
-                      time: new Date().valueOf(),
-                      token: res.token
-                    }
-                  });
 
-                  if (res.uid == 0) {
-                    wx.reLaunch({ url: '/pages/bind' });
-                    return false;
-                  }
-
-                  wx.reLaunch({
-                    url: '/pages/index'
-                  });
-                }
-              },
-              complete() {
-                tip.hideLoading();
-              }
-            });
-          } else {
-            tip.errorToast('登录失败,' + res.errMsg);
-          }
-        },
-        fail() {
-          tip.hideLoading();
-        }
-      });
+      this.$parent.login(function () {
+        wx.reLaunch({
+          url: '/pages/index'
+        });
+      })
     }
   };
 }
