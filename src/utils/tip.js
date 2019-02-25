@@ -5,11 +5,16 @@ export default {
       wepy.showToast({
         title: msg,
         icon: 'none',
-        duration: duration
+        duration: duration,
+        success () {
+          setTimeout(function () {
+            resolve(true)
+          }, duration)
+        },
+        fail () {
+          resolve(false)
+        }
       })
-      setTimeout(function () {
-        resolve(true)
-      }, duration)
     })
   },
 
@@ -18,11 +23,16 @@ export default {
       wepy.showToast({
         title: msg,
         icon: 'success',
-        duration: duration
+        duration: duration,
+        success () {
+          setTimeout(function () {
+            resolve(true)
+          }, duration)
+        },
+        fail () {
+          resolve(false)
+        }
       });
-      setTimeout(function () {
-        resolve(true)
-      }, duration)
     })
   },
 
@@ -31,11 +41,16 @@ export default {
       wepy.showToast({
         title: msg,
         icon: icon,
-        duration: duration
+        duration: duration,
+        success () {
+          setTimeout(function () {
+            resolve(true)
+          }, duration)
+        },
+        fail () {
+          resolve(false)
+        }
       })
-      setTimeout(function () {
-        resolve(true)
-      }, duration)
     })
   },
 
