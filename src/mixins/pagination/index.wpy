@@ -1,6 +1,7 @@
 <script>
   import wepy from 'wepy';
-  import Page from '@/utils/page'
+  import Page from './page'
+  import Tip from '@/utils/tip'
   /**
    * 分页通用方法
   */
@@ -23,7 +24,9 @@
         this.isPageLoading = true;
         const param = this.params ? this.params() : {};
         let self = this
+        Tip.showLoading()
         await this._page.next(param, function (params){ return self.getData(params)});
+        Tip.hideLoading()
         this.isPageReachBottom = this._page.reachBottom;
         this.isPageEmpty = this._page.list.length == 0;
         if (this.onPageLoad) {
