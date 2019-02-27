@@ -7,9 +7,7 @@ export default {
                 url: url,
                 data: data,
                 method: 'POST',
-                header: {
-                    ...header
-                },
+                header: header,
                 success: function(res) {
                     resolve(res)
                 },
