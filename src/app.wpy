@@ -9,8 +9,9 @@ export default class extends wepy.app {
   config = {
     pages: [
       'pages/index',
-      'pages/login',
+      'pages/bind',
       'pages/user/personal',
+      'pages/user/statistics',
       'pages/user/feedback',
       'pages/auth',
       'pages/about'
@@ -18,49 +19,61 @@ export default class extends wepy.app {
     window: {
       backgroundTextStyle: 'light',
       navigationBarBackgroundColor: '#fff',
-      navigationBarTitleText: '平台',
+      navigationBarTitleText: '家政平台',
       navigationBarTextStyle: 'black'
     },
     tabBar: {
       selectedColor: '#4A4B5D',
-      list: []
+      list: [
+        {
+          iconPath: 'assets/images/home.png',
+          selectedIconPath: 'assets/images/home1.png',
+          pagePath: 'pages/index',
+          text: '首页'
+        },
+        {
+          iconPath: 'assets/images/me.png',
+          selectedIconPath: 'assets/images/me1.png',
+          pagePath: 'pages/user/personal',
+          text: '我的'
+        }
+      ]
     },
     permission: {
       'scope.userLocation': {
-        desc: '你的位置信息将用于记录您的位置！'
+        desc: '你的位置信息将用于记录您的服务位置！'
       }
     },
-    debug: true
+    debug: false
   };
   globalData = {
+    id: '',
     userInfo: null,
     systemInfo: null,
-    openId: null,
     unionId: null,
     token: '',
-    apiHost: '',
-    imgHost: '',
+    imgHost: 'https://test/uploads/',
     uploadFileSize: 2048,
-    uploadHost: ''
+    uploadHost: 'https://test/upload'
   };
   constructor() {
     super();
     this.use('requestfix');
-    let self = this;
     this.intercept('request', {
-      config(p) {
+      config:(p) => {
         if (!p.method) p.method = 'POST';
         if (!/(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g.test(p.url)) {
-          p.url = self.globalData.apiHost + p.url;
+          p.url = 'https://test/api/' + p.url;
         }
 
         if (!p.data) {
           p.data = {};
         }
-        p.data.token = self.globalData.token;
+        p.data.token = this.globalData.token;
+        wx.showNavigationBarLoading()
         return p;
       },
-      success(p) {
+      success: (p) => {
         if (typeof p.data == 'string') {
           // 这里暂时有问题
           tip.errorToast('数据格式错误' + p.data);
@@ -73,15 +86,14 @@ export default class extends wepy.app {
             wx.removeStorage({
               key: 'token'
             })
-            self.globalData.token = null;
+            this.globalData.token = null;
             wepy.switchTab({
               url: '/pages/index'
             });
             return false;
           case 302:
-            wepy.reLaunch({
-              url: '/pages/bind'
-            });
+            wx.reLaunch({ url: '/pages/bind' });
+            return false;
           default:
             if (p.data.ret) {
               tip.errorToast(p.data.msg);
@@ -93,16 +105,18 @@ export default class extends wepy.app {
       fail(p) {
         tip.errorToast('网络错误');
         return p;
+      },
+      complete () {
+        wx.hideNavigationBarLoading()
       }
     });
-
     this.intercept('uploadFile', {
-      config(params) {
+      config: (params) => {
         params.name = 'file';
         if (!params.formData) {
           params.formData = {};
         }
-        params.formData.token = self.globalData.token;
+        params.formData.token = this.globalData.token;
         return params;
       },
       success(res) {
@@ -125,8 +139,8 @@ export default class extends wepy.app {
       }
     });
     wx.getSystemInfo({
-      success: function(res) {
-        self.globalData.systemInfo = res;
+      success: (res) => {
+        this.globalData.systemInfo = res;
       }
     });
   }
@@ -136,9 +150,8 @@ export default class extends wepy.app {
       try {
         let info = wx.getStorageSync('token');
         if (info) {
-          info = JSON.parse(info)
           let ctime = (new Date()).valueOf();
-          if (ctime - info.time > 2 * 58 * 60 * 1000) {
+          if (ctime - info.time > 86400000) {
             wx.removeStorage({
               key: 'token'
             })
@@ -156,7 +169,7 @@ export default class extends wepy.app {
       return true;
     }
 
-    let isAuth = await new Promise((resolve,reject) => {
+    let isAuth = await new Promise((resolve, reject) => {
       wx.getSetting({
         success(res) {
           resolve(res.authSetting['scope.userInfo'])
@@ -167,32 +180,30 @@ export default class extends wepy.app {
       });
     })
     if (!isAuth) {
-      wepy.reLaunch({
-        url: '/pages/auth'
-      });
+      wx.reLaunch({ url: '/pages/auth' });
       return false;
     }
 
-    let self = this
+
     tip.showLoading();
     wepy.login({
-      success:async function(res) {
+      success:async (res) => {
         if (res.code) {
-          let info = await self.getUserInfo()
+          let info = await this.getUserInfo()
           if (!info) {
             tip.errorToast('获取微信用户信息错误');
             return false;
           }
           wepy.request({
-            url: 'worker_common/miniProgramLogin',
+            url: 'common/miniProgramLogin',
             data: {
               code: res.code,
               encrypted_data: info.encryptedData,
               iv: info.iv
             },
-            success: function(res) {
+            success: (res) => {
               if (res) {
-                self.globalData.token = res.token;
+                this.globalData.token = res.token;
                 wx.setStorage({
                   key: 'token',
                   data: {
@@ -206,7 +217,8 @@ export default class extends wepy.app {
                   wx.reLaunch({ url: '/pages/bind' });
                   return false;
                 }
-                cb && cb(self.globalData);
+
+                cb && cb(this.globalData);
               }
             },
             complete() {
@@ -223,18 +235,15 @@ export default class extends wepy.app {
     });
   }
 
-
   getUserInfo() {
     if (this.globalData.userInfo) {
       return this.globalData.userInfo;
     }
-
-    const self = this;
     return new Promise((resolve, reject) => {
       wepy.getUserInfo({
-        success(res) {
-          self.globalData.userInfo = res.userInfo;
-          resolve(res)
+        success:(res) => {
+          this.globalData.userInfo = res.userInfo;
+          resolve(res);
         },
         fail () {
           resolve(false)
@@ -244,20 +253,19 @@ export default class extends wepy.app {
   }
 
   async uploadFile(count = 9, sourceType = null) {
-    let self = this;
     return new Promise((resolve, reject) => {
       wepy.chooseImage({
         count: count,
         sourceType: sourceType,
-        success: function(res) {
+        success: (res) => {
           var num = 0;
           var result = [];
           res.tempFiles.forEach(async element => {
-            if (self.globalData.uploadFileSize * 1024 < element.size) {
+            if (this.globalData.uploadFileSize * 1024 < element.size) {
               tip.errorToast(
                 '文件太大, 不能超过 ' +
-                  self.globalData.uploadFileSize / 1024 +
-                  'M.'
+                  this.globalData.uploadFileSize / 1024 +
+                  'M。'
               );
               resolve(false);
             }
@@ -265,7 +273,7 @@ export default class extends wepy.app {
             tip.showLoading();
             let cresult = await new Promise((cresolve, creject) => {
               wepy.uploadFile({
-                url: self.globalData.uploadHost,
+                url: this.globalData.uploadHost,
                 filePath: element.path,
                 success: function(res) {
                   if (res) {
@@ -367,6 +375,36 @@ export default class extends wepy.app {
         }
       });
     });
+  }
+
+  onLaunch () {
+    /**
+     * 更新检测
+     */
+    let updateManager = wx.getUpdateManager()
+    updateManager.onCheckForUpdate(function (res) {
+        console.log(res.hasUpdate)
+    })
+    updateManager.onUpdateReady(function () {
+        wx.showModal({
+            title: '更新提示',
+            content: '新版本已经准备好，是否重启应用？',
+            success: function (res) {
+                if (res.confirm) {
+                    // 新的版本已经下载好，调用 applyUpdate 应用新版本并重启
+                    updateManager.applyUpdate()
+                }
+            }
+        })
+    })
+    updateManager.onUpdateFailed(function () {
+        // 新的版本下载失败
+        wx.showModal({
+            title: '更新提示',
+            content: '新版本下载失败',
+            showCancel:false
+        })
+    })
   }
 }
 </script>

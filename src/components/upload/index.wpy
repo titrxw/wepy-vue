@@ -84,7 +84,6 @@ export default class Upload extends wepy.component {
   
   methods = {
     upload() {
-      let _self = this;
       let count = 1
       if (this.multiple) {
         count = this.count - this.tmpPics.length
@@ -95,27 +94,27 @@ export default class Upload extends wepy.component {
       }
       wx.chooseImage({
         count: count,
-        sourceType: _self.sourceType,
-        success: function(res) {
+        sourceType: this.sourceType,
+        success: (res) => {
           res.tempFiles.forEach(element => {
-            if (_self.fileSize * 1024 < element.size) {
+            if (this.fileSize * 1024 < element.size) {
               Tip.errorToast(
-                '文件太大, 不能超过 ' + _self.fileSize / 1024 + 'M.'
+                '文件太大, 不能超过 ' + this.fileSize / 1024 + 'M.'
               );
               return false;
             }
             Tip.showLoading();
             wepy.uploadFile({
-              url: _self.uploadHost,
+              url: this.uploadHost,
               filePath: element.path,
-              success: function(res) {
+              success: (res) => {
                 if (res) {
-                  if (!_self.multiple) {
-                    _self.pics = res;
+                  if (!this.multiple) {
+                    this.pics = res;
                   } else {
-                    _self.pics.push(res);
+                    this.pics.push(res);
                   }
-                  _self.$apply();
+                  this.$apply();
                 }
               },
               complete: function() {
@@ -142,19 +141,18 @@ export default class Upload extends wepy.component {
     }
   };
   onLoad = function(options) {
-    let self = this;
     wx.getSystemInfo({
-      success: function(res) {
+      success: (res) => {
         let rate = res.screenWidth / 375.0
-        self.width = (res.screenWidth - 30 * rate - self.lineItems * 15 * rate) / self.lineItems;
-        self.doInit(self.pics);
-        self.$apply();
+        this.width = (res.screenWidth - 30 * rate - this.lineItems * 15 * rate) / this.lineItems;
+        this.doInit(this.pics);
+        this.$apply();
       }
     });
   };
 }
 </script>
-<style lang="less" scoped>
+<style lang="less">
 .upload {
   display: flex;
   flex-wrap: wrap;
