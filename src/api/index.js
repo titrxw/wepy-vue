@@ -22,14 +22,14 @@ export default {
         return ajax.get('common/aboutUs')
     },
     feedBackTypes() {
-        return ajax.get('Goods/feedbackTypeList')
+        return ajax.get('common/feedbackTypeList')
     },
     feedBack(form) {
-        return ajax.post('Goods/feedback', { form })
+        return ajax.post('common/feedback', { form })
     },
 
     // 通知
     getNotify() {
-        return ajax.get('Goods/feedbackTypeList')
+        return ajax.get('common/feedbackTypeList')
     }
 }
