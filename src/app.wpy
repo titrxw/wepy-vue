@@ -430,5 +430,51 @@ export default class extends wepy.app {
         })
     })
   }
+
+  initWs () {
+    if (!this.globalData.ws) {
+      var heartBeat = null
+      wx.connectSocket({
+        url: this.globalData.wsHost + this.globalData.token,
+        header: {
+          'content-type': 'application/json'
+        },
+        method: 'GET'
+      })
+
+      wx.onSocketOpen(event => {
+        this.globalData.ws = true
+        heartBeat = setInterval(() => {
+          wx.sendSocketMessage({
+            data: JSON.stringify({
+              cmd: 'common-newOrder'
+            })
+          })
+        }, 15000);
+      })
+      wx.onSocketError(event => {
+        this.globalData.ws = false
+        clearInterval(heartBeat)
+        tip.errorToast('websocket错误')
+      })
+      wx.onSocketClose(event => {
+        clearInterval(heartBeat)
+        this.globalData.ws = false
+      })
+      wx.onSocketMessage(event => {
+        try{
+          event = JSON.parse(event.data)
+        }catch (e) {
+          tip.errorToast('数据错误' + event.data)
+          return false;
+        }
+
+        console.log(event.data)
+        console.log(event.cmd)
+
+        // 通过cmd把逻辑调度到redux中
+      })
+    }
+  }
 }
 </script>
