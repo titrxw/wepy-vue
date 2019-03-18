@@ -5,7 +5,6 @@ import wepy from 'wepy';
 import 'wepy-async-function';
 import tip from '@/utils/tip';
 import store from '@/store'
-import websocketActions from '@/store/actions/websocket'
 export default class extends wepy.app {
   // 这里只能是静态数据
   config = {
@@ -449,7 +448,10 @@ export default class extends wepy.app {
         return false;
       }
 
-      store.dispatch(websocketActions[event.cmd](event.data))
+      store.dispatch( {
+        type: event.cmd,
+        data: event.data
+      })
     })
     this.globalData.websocket.onError(() => {
       tip.errorToast('wesocket 错误')
