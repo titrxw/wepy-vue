@@ -4,6 +4,8 @@
 import wepy from 'wepy';
 import 'wepy-async-function';
 import tip from '@/utils/tip';
+import store from '@/store'
+import websocketActions from '@/store/actions/websocket'
 export default class extends wepy.app {
   // 这里只能是静态数据
   config = {
@@ -54,7 +56,8 @@ export default class extends wepy.app {
     token: '',
     imgHost: 'https://test/uploads/',
     uploadFileSize: 2048,
-    uploadHost: 'https://test/upload'
+    uploadHost: 'https://test/upload',
+    websocket: null
   };
   constructor() {
     super();
@@ -141,15 +144,7 @@ export default class extends wepy.app {
     
     this.getSystemInfo()
 
-    wx.onNetworkStatusChange(function (res) {
-      if (!res.isConnected) {
-        tip.errorToast('网络连接失败');
-      } else {
-        if (res.networkType < '4g') {
-          tip.errorToast('网络质量较差');
-        }
-      }
-    })
+    this.globalData.websocket = new WebSocket()
   }
 
   getSystemInfo () {
@@ -190,6 +185,7 @@ export default class extends wepy.app {
     }
     if (this.globalData.token) {
       cb && cb(this.globalData);
+      initWs()
       return true;
     }
 
@@ -243,6 +239,7 @@ export default class extends wepy.app {
                 }
 
                 cb && cb(this.globalData);
+                initWs()
               }
             },
             complete() {
@@ -429,52 +426,34 @@ export default class extends wepy.app {
             showCancel:false
         })
     })
+
+    
+    wx.onNetworkStatusChange(function (res) {
+      if (!res.isConnected) {
+        tip.errorToast('网络连接失败');
+      } else {
+        if (res.networkType < '4g') {
+          tip.errorToast('网络质量较差');
+        }
+      }
+    })
   }
 
   initWs () {
-    if (!this.globalData.ws) {
-      var heartBeat = null
-      wx.connectSocket({
-        url: this.globalData.wsHost + this.globalData.token,
-        header: {
-          'content-type': 'application/json'
-        },
-        method: 'GET'
-      })
+    this.globalData.websocket.connect(this.globalData.wsHost + this.globalData.token)
+    this.globalData.websocket.onMessage((event) => {
+      try{
+        event = JSON.parse(event.data)
+      }catch (e) {
+        tip.errorToast('数据错误' + event)
+        return false;
+      }
 
-      wx.onSocketOpen(event => {
-        this.globalData.ws = true
-        heartBeat = setInterval(() => {
-          wx.sendSocketMessage({
-            data: JSON.stringify({
-              cmd: 'common-newOrder'
-            })
-          })
-        }, 15000);
-      })
-      wx.onSocketError(event => {
-        this.globalData.ws = false
-        clearInterval(heartBeat)
-        tip.errorToast('websocket错误')
-      })
-      wx.onSocketClose(event => {
-        clearInterval(heartBeat)
-        this.globalData.ws = false
-      })
-      wx.onSocketMessage(event => {
-        try{
-          event = JSON.parse(event.data)
-        }catch (e) {
-          tip.errorToast('数据错误' + event.data)
-          return false;
-        }
-
-        console.log(event.data)
-        console.log(event.cmd)
-
-        // 通过cmd把逻辑调度到redux中
-      })
-    }
+      store.dispatch(websocketActions[event.cmd](event.data))
+    })
+    this.globalData.websocket.onError(() => {
+      tip.errorToast('wesocket 错误')
+    })
   }
 }
 </script>
