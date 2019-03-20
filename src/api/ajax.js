@@ -11,7 +11,7 @@ export default {
   },
   request(url, data,method = 'GET', header = {}) {
     // 防止重复提交 暂时这样处理
-    let flag = JSON.stringify(arguments)
+    let flag = url + '&' + method
     if (throttle[flag]) {
       return false;
     }
