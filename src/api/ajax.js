@@ -1,6 +1,6 @@
 import wepy from 'wepy';
 
-var throttle = {}
+let throttle = {}
 
 export default {
   post(url, data, header = {}) {
