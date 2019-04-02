@@ -28,7 +28,7 @@ export default {
       let ctime = new Date().valueOf();
       if (ctime - expire.cur > expire.expire) {
         this.rm(key)
-        return null
+        return _default
       }
     }
     
@@ -37,6 +37,9 @@ export default {
       try{
         data = wx.getStorageSync(key)
       } catch (e) {
+        data = _default
+      }
+      if (!data) {
         data = _default
       }
       rememberData[key] = data
