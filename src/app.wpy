@@ -59,6 +59,8 @@ export default class extends wepy.app {
     uploadHost: 'https://test/upload',
     websocket: null
   };
+  
+  $storage = null
   constructor() {
     super();
     this.$storage = storage
@@ -167,20 +169,12 @@ export default class extends wepy.app {
 
   async login(cb) {
     if (!this.globalData.token) {
-      try {
-        let info = wx.getStorageSync('token');
-        if (info) {
-          let ctime = (new Date()).valueOf();
-          if (ctime - info.time > 86400000) {
-            wx.removeStorage({
-              key: 'token'
-            })
-            this.globalData.token = null
-          } else {
-            this.globalData.token = info.token;
-          }
-        }
-      } catch (e) {
+      let info = storage.get('token');
+      if (info) {
+        this.globalData.uid = info.uid;
+        this.globalData.token = info.token;
+      } else {
+        this.globalData.uid = null;
         this.globalData.token = null;
       }
     }
@@ -225,13 +219,10 @@ export default class extends wepy.app {
             success: (res) => {
               if (res) {
                 this.globalData.token = res.token;
-                wx.setStorage({
-                  key: 'token',
-                  data: {
-                    time: (new Date()).valueOf(),
-                    token: res.token
-                  }
-                })
+                storage.set('token', {
+                  token: res.token,
+                  uid: res.uid
+                }, 86400000)
 
                 // 绑定
                 if (res.uid == 0) {
