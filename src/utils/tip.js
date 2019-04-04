@@ -1,39 +1,11 @@
 import wepy from 'wepy'
 export default {
   errorToast(msg, duration = 2000) {
-    return new Promise(function (resolve, reject) {
-      wepy.showToast({
-        title: msg,
-        icon: 'none',
-        duration: duration,
-        success () {
-          setTimeout(function () {
-            resolve(true)
-          }, duration)
-        },
-        fail () {
-          resolve(false)
-        }
-      })
-    })
+    return this.toast(msg,'none', duration)
   },
 
   successToast(msg, duration = 2000) {
-    return new Promise(function (resolve, reject) {
-      wepy.showToast({
-        title: msg,
-        icon: 'success',
-        duration: duration,
-        success () {
-          setTimeout(function () {
-            resolve(true)
-          }, duration)
-        },
-        fail () {
-          resolve(false)
-        }
-      });
-    })
+    return this.toast(msg,'success', duration)
   },
 
   toast(msg, icon = 'none', duration = 2000) {
